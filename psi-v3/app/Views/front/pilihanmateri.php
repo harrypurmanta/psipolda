@@ -90,7 +90,7 @@
                                         <div class="col-md-8">
                                             <div class="form-group">
                                                 <label for="token">Token</label>
-                                                <input class="form-control" type="text" name="token" id="token" placeholder="Masukkan Token" maxlength="6" minlength="6">
+                                                <input class="form-control" type="text" name="token" id="token" placeholder="Masukkan Token" maxlength="6" minlength="6" autocomplete="off">
                                                 <input class="form-control" type="hidden" name="group_idx" id="group_idx">
                                                 <input class="form-control" type="hidden" name="materi_id" id="materi_id">
                                             </div>
@@ -122,7 +122,7 @@
                                         <div class="col-md-8">
                                             <div class="form-group">
                                                 <label for="token">Nomor Test</label>
-                                                <input class="form-control" type="text" name="notest" id="notest" placeholder="Masukkan No Test Anda" maxlength="6" minlength="6">
+                                                <input class="form-control" type="text" name="notest" id="notest" placeholder="Masukkan No Test Anda" maxlength="6" minlength="6" autocomplete="off">
                                                 <input class="form-control" type="hidden" name="group_id_notest" id="group_id_notest">
                                                 <input class="form-control" type="hidden" name="materi_id_notest" id="materi_id_notest">
                                             </div>

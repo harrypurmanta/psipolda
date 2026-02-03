@@ -33,7 +33,7 @@ $request = \Config\Services::request();
                                 contoh : 
                                 6 + 4 = 10 ,anda cukup memilih angka 0, jika 7 + 7 = 14 , anda cukup memilih angka 4 nya saja.
                                 Selamat Mengerjakan</p>
-                                <p>Anda bisa menggunakan KEYBOARD atau menekan angka pada layar</p>
+                                <p>Anda bisa menekan tombol angka pada <b>KEYBOARD</b> atau menekan angka pada layar</p>
                                 <a href='<?= base_url() ?>/pauli/ujian/<?= $request->uri->getSegment(3) ?>/<?= $request->uri->getSegment(4) ?>' class='btn btn-success' style='font-size:18px;'>Mulai</a>
                             </div>
                         </div>
