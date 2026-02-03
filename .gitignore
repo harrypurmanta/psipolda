@@ -1,0 +1,30 @@
+# === CI4 System ===
+psi-v3/writable/*
+!/writable/.gitkeep
+
+# === Environment ===
+.env
+
+# === Composer ===
+psi-v3/vendor/
+
+# === Cache & Logs ===
+psi-v3/writable/cache/*
+psi-v3/writable/logs/*
+psi-v3/writable/debugbar/*
+psi-v3/writable/session/*
+psi-v3/writable/uploads/*
+
+# === User Uploads (optional) ===
+psi-v3/public/uploads/*
+!/public/uploads/.gitkeep
+
+# === OS & Editor ===
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+
+# === Test & Temp ===
+*.log
+*.tmp
