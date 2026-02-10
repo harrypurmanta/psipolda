@@ -268,14 +268,7 @@ class Tiu5 extends BaseController
         $request = \Config\Services::request();
         $user_id = $this->session->user_id;
         $materi_id = $request->uri->getSegment(3);
-        $klm = $this->soalmodel->getKolomSoal()->getResult();
-        $kolom = array();
-        foreach ($klm as $key) {
-            $kolom[] = $key->kolom_nm;
-        }
-        $data = [
-            "kolom" => $kolom
-        ];
-        return view('front/dass/hasiltryout',$data);
+       
+        return view('front/dass/hasiltryout');
     }
 }
