@@ -12,36 +12,12 @@ $request = \Config\Services::request();
   <link rel="stylesheet" href="<?= base_url() ?>/dist/dist/css/adminlte.min.css">
   <link rel="icon" href="../../../../../images/bg/favicon.ico" type="image/gif">
 
-  <style>
-/* ===================== */
-/* UMUM */
-.page {
-    page-break-after: always;
-    page-break-inside: avoid;
-}
+<style>
+    @media print {
 
-/* ===================== */
-/* HALAMAN TABEL (PORTRAIT) */
-.page-portrait {
-    page-break-after: always;
-}
-
-/* ===================== */
-/* HALAMAN CHART (LANDSCAPE) */
-.page-landscape {
-    page-break-after: always;
-}
-
-@media print {
-
-    @page {
-        size: A4;
-        margin: 15mm;
-    }
-
-    @page landscape {
-        size: A4 landscape;
-        margin: 15mm;
+    body {
+        margin: 0;
+        padding: 0;
     }
 
     .print-page {
@@ -49,53 +25,54 @@ $request = \Config\Services::request();
         width: 100%;
     }
 
+    /* Portrait & Landscape */
+    .portrait {
+        page-break-inside: avoid;
+    }
+
     .landscape {
-        page: landscape;
+        page-break-inside: avoid;
+        transform: rotate(0deg);
     }
 
-    h3 {
-        margin-bottom: 10px;
-    }
-
-    /* Box chart DIKUNCI */
-    .chart-box {
-        width: 100%;
-        /* height: 220mm; */
+    /* 2 kolom sejajar */
+    .two-column {
         display: flex;
-        justify-content: center;
-        align-items: center;
+        flex-direction: row;
+        justify-content: space-between;
+        gap: 10px;
+    }
+
+    .print-col {
+        width: 48%;
+    }
+
+    table {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 11px;
     }
 
     canvas {
-        max-width: 100% !important;
-        max-height: 100% !important;
+        width: 100% !important;
+        height: 500px !important;
     }
 
-    .print-header {
-        display: flex;
-        width: 100%;
-    }
-
-    .col-left,
-    .col-right {
-        width: 50%;
-    }
-
-    .col-left table,
-    .col-right table {
-        width: 100%;
-        font-size: 11pt;
+    /* HILANGKAN ELEMENT YANG TIDAK PERLU */
+    .no-print {
+        display: none !important;
     }
 }
+
 </style>
 
 </head>
 <body>
     <h2 style="text-align:center;">HASIL PENILAIAN</h2>
     <hr> 
-    <div class="row print-header" style="text-align:center;">
-        <div class="col-left">
-            <table border="0" style="table-layout:fixed;width:90%;margin: 0 auto;line-height: 16px;">
+    <div class="portrait two-column">
+        <div class="print-col">
+            <table border="0" style="table-layout:fixed; width:90%;margin: 0 auto;line-height: 16px;">
                 <tbody>
                     <tr>
                         <td class="text-left text-bold" width="100">Nama</td>
@@ -121,7 +98,7 @@ $request = \Config\Services::request();
             </table>
         </div>
 
-        <div class="col-right">
+        <div class="print-col">
             <table border="0" style="table-layout:fixed;width:90%;margin: 0 auto;line-height: 16px;">
                 <tbody>
                     <tr>
@@ -142,170 +119,158 @@ $request = \Config\Services::request();
                 </tbody>
             </table>
         </div>
-    </div>
+    </div>  
     <hr>    
-    <div class="page page-portrait">
-        <div class="card">
-            <div class="card-body">
-                <div class="text-center mb-3">
-                    <h3>Lembar 1</h3>
-                </div>
-
-                <table class="table table-bordered table-hover">
-                    <thead>
-                        <tr>
-                            <th class="text-center">No.</th>
-                            <th class="text-center">Kolom</th>
-                            <th class="text-center">Terjawab</th>
-                            <th class="text-center">Tidak Terjawab</th>
-                            <th class="text-center">Salah</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <?php $no = 1; foreach ($hasil[1] as $row) { ?>
-                        <tr>
-                            <td class="text-center"><?= $no++ ?></td>
-                            <td><?= $row->kolom_nm ?></td>
-                            <td class="text-center"><?= $row->terjawab ?></td>
-                            <td class="text-center"><?= $row->tidak_terjawab ?></td>
-                            <td class="text-center"><?= $row->salah ?></td>
-                        </tr>
-                        <?php } ?>
-                    </tbody>
-                </table>
+    <div class="portrait two-column mb-5">
+        <div class="print-col">
+            <div class="text-center mb-3">
+                <h3>Lembar 1</h3>
             </div>
-        </div>
-    </div>                       
-    <div class="page page-portrait">
-        <div class="card">
-            <div class="card-body">
-                <div class="text-center mb-3">
-                    <h3>Lembar 2</h3>
-                </div>
 
-                <table class="table table-bordered table-hover">
-                    <thead>
-                        <tr>
-                            <th class="text-center">No.</th>
-                            <th class="text-center">Kolom</th>
-                            <th class="text-center">Terjawab</th>
-                            <th class="text-center">Tidak Terjawab</th>
-                            <th class="text-center">Salah</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <?php $no = 1; foreach ($hasil[2] as $row) { ?>
-                        <tr>
-                            <td class="text-center"><?= $no++ ?></td>
-                            <td><?= $row->kolom_nm ?></td>
-                            <td class="text-center"><?= $row->terjawab ?></td>
-                            <td class="text-center"><?= $row->tidak_terjawab ?></td>
-                            <td class="text-center"><?= $row->salah ?></td>
-                        </tr>
-                        <?php } ?>
-                    </tbody>
-                </table>
+            <table class="table-bordered">
+                <thead>
+                    <tr>
+                        <th class="text-center">No.</th>
+                        <th class="text-center">Kolom</th>
+                        <th class="text-center">Terjawab</th>
+                        <th class="text-center">Tidak Terjawab</th>
+                        <th class="text-center">Salah</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <?php $no = 1; foreach ($hasil[1] as $row) { ?>
+                    <tr>
+                        <td class="text-center"><?= $no++ ?></td>
+                        <td><?= $row->kolom_nm ?></td>
+                        <td class="text-center"><?= $row->terjawab ?></td>
+                        <td class="text-center"><?= $row->tidak_terjawab ?></td>
+                        <td class="text-center"><?= $row->salah ?></td>
+                    </tr>
+                    <?php } ?>
+                </tbody>
+            </table>
+        </div>
+
+        <div class="print-col">
+            <div class="text-center mb-3">
+                <h3>Lembar 2</h3>
             </div>
+
+            <table class="table-bordered">
+                <thead>
+                    <tr>
+                        <th class="text-center">No.</th>
+                        <th class="text-center">Kolom</th>
+                        <th class="text-center">Terjawab</th>
+                        <th class="text-center">Tidak Terjawab</th>
+                        <th class="text-center">Salah</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <?php $no = 1; foreach ($hasil[2] as $row) { ?>
+                    <tr>
+                        <td class="text-center"><?= $no++ ?></td>
+                        <td><?= $row->kolom_nm ?></td>
+                        <td class="text-center"><?= $row->terjawab ?></td>
+                        <td class="text-center"><?= $row->tidak_terjawab ?></td>
+                        <td class="text-center"><?= $row->salah ?></td>
+                    </tr>
+                    <?php } ?>
+                </tbody>
+            </table>
         </div>
-    </div>
+    </div>  
 
-    <div class="page page-portrait">
-        <div class="card">
-            <div class="card-body">
-                <div class="text-center mb-3">
-                    <h3>Lembar 3</h3>
-                </div>
-
-                <table class="table table-bordered table-hover">
-                    <thead>
-                        <tr>
-                            <th class="text-center">No.</th>
-                            <th class="text-center">Kolom</th>
-                            <th class="text-center">Terjawab</th>
-                            <th class="text-center">Tidak Terjawab</th>
-                            <th class="text-center">Salah</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <?php $no = 1; foreach ($hasil[3] as $row) { ?>
-                        <tr>
-                            <td class="text-center"><?= $no++ ?></td>
-                            <td><?= $row->kolom_nm ?></td>
-                            <td class="text-center"><?= $row->terjawab ?></td>
-                            <td class="text-center"><?= $row->tidak_terjawab ?></td>
-                            <td class="text-center"><?= $row->salah ?></td>
-                        </tr>
-                        <?php } ?>
-                    </tbody>
-                </table>
+    <div class="print-page portrait two-column">
+        <div class="print-col">
+            <div class="text-center mb-3">
+                <h3>Lembar 3</h3>
             </div>
+
+            <table class="table-bordered">
+                <thead>
+                    <tr>
+                        <th class="text-center">No.</th>
+                        <th class="text-center">Kolom</th>
+                        <th class="text-center">Terjawab</th>
+                        <th class="text-center">Tidak Terjawab</th>
+                        <th class="text-center">Salah</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <?php $no = 1; foreach ($hasil[3] as $row) { ?>
+                    <tr>
+                        <td class="text-center"><?= $no++ ?></td>
+                        <td><?= $row->kolom_nm ?></td>
+                        <td class="text-center"><?= $row->terjawab ?></td>
+                        <td class="text-center"><?= $row->tidak_terjawab ?></td>
+                        <td class="text-center"><?= $row->salah ?></td>
+                    </tr>
+                    <?php } ?>
+                </tbody>
+            </table>
         </div>
-    </div>
 
-    <div class="page page-portrait">
-        <div class="card">
-            <div class="card-body">
-                <div class="text-center mb-3">
-                    <h3>Lembar 4</h3>
-                </div>
-
-                <table class="table table-bordered table-hover">
-                    <thead>
-                        <tr>
-                            <th class="text-center">No.</th>
-                            <th class="text-center">Kolom</th>
-                            <th class="text-center">Terjawab</th>
-                            <th class="text-center">Tidak Terjawab</th>
-                            <th class="text-center">Salah</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <?php $no = 1; foreach ($hasil[4] as $row) { ?>
-                        <tr>
-                            <td class="text-center"><?= $no++ ?></td>
-                            <td><?= $row->kolom_nm ?></td>
-                            <td class="text-center"><?= $row->terjawab ?></td>
-                            <td class="text-center"><?= $row->tidak_terjawab ?></td>
-                            <td class="text-center"><?= $row->salah ?></td>
-                        </tr>
-                        <?php } ?>
-                    </tbody>
-                </table>
+        <div class="print-col">
+            <div class="text-center mb-3">
+                <h3>Lembar 4</h3>
             </div>
+
+            <table class="table-bordered">
+                <thead>
+                    <tr>
+                        <th class="text-center">No.</th>
+                        <th class="text-center">Kolom</th>
+                        <th class="text-center">Terjawab</th>
+                        <th class="text-center">Tidak Terjawab</th>
+                        <th class="text-center">Salah</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <?php $no = 1; foreach ($hasil[4] as $row) { ?>
+                    <tr>
+                        <td class="text-center"><?= $no++ ?></td>
+                        <td><?= $row->kolom_nm ?></td>
+                        <td class="text-center"><?= $row->terjawab ?></td>
+                        <td class="text-center"><?= $row->tidak_terjawab ?></td>
+                        <td class="text-center"><?= $row->salah ?></td>
+                    </tr>
+                    <?php } ?>
+                </tbody>
+            </table>
         </div>
-    </div>
-        
-    
-        <div class="print-page landscape">
+    </div>  
+    <div class="portrait two-column mb-5">
+        <div class="print-col">
             <h3 class="text-center">Grafik Lembar 1</h3>
             <div class="chart-box">
                 <canvas id="chart_sk_1" style="height:600px;"></canvas>
             </div>
         </div>
 
-        <div class="print-page landscape">
+        <div class="print-col">
             <h3 class="text-center">Grafik Lembar 2</h3>
             <div class="chart-box">
                 <canvas id="chart_sk_2" style="height:600px;"></canvas>
             </div>
         </div>
+    </div>
 
-        <div class="print-page landscape">
+    <div class="portrait two-column">
+        <div class="print-col">
             <h3 class="text-center">Grafik Lembar 3</h3>
             <div class="chart-box">
                 <canvas id="chart_sk_3" style="height:600px;"></canvas>
             </div>
         </div>
 
-        <div class="print-page landscape">
+        <div class="print-col">
             <h3 class="text-center">Grafik Lembar 4</h3>
             <div class="chart-box">
                 <canvas id="chart_sk_4" style="height:600px;"></canvas>
             </div>
         </div>
-
-
-
+    </div>
         
 <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
 <script src="<?= base_url() ?>/plugins/bootstrap/js/bootstrap.bundle.min.js"></script>
