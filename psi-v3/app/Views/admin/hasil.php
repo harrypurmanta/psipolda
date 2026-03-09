@@ -147,6 +147,8 @@
       window.location.href = "<?= base_url() ?>/admin/hasil/userdbi/"+start_dttm+"/"+end_dttm+"/"+group_id+"/"+materi_id
     } else if (group_id == 9){
       window.location.href = "<?= base_url() ?>/admin/hasil/userpauli/"+start_dttm+"/"+end_dttm+"/"+group_id+"/"+materi_id
+    } else if (group_id == 10){
+      window.location.href = "<?= base_url() ?>/admin/hasil/hasilexcelpkp/"+start_dttm+"/"+end_dttm+"/"+group_id+"/"+materi_id
     }
     
  }

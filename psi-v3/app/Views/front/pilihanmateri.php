@@ -222,8 +222,10 @@
                             window.location.href = "<?= base_url() ?>/materiG/petunjukmaterig/"+materi_id+"/"+group_id;
                         } else if (group_id == 8) {
                             window.location.href = "<?= base_url() ?>/dbi/petunjukdbi/"+materi_id+"/"+group_id;
-                         } else if (group_id == 9) {
+                        } else if (group_id == 9) {
                             window.location.href = "<?= base_url() ?>/pauli/petunjukpauli/"+materi_id+"/"+group_id;
+                        } else if (group_id == 10) {
+                            window.location.href = "<?= base_url() ?>/pkp/petunjukpkp/"+materi_id+"/"+group_id+"/1";
                         }
                     } 
                     $("#loader-wrapper").addClass("d-none");

@@ -159,6 +159,23 @@ public function getAllSoalSK() {
                         ->get();
     }
 
+    public function getSoalSKFast($no_soal, $group_id, $materi, $kolom_id, $sk_group_id)
+    {
+        return $this->db->table('soal')
+            ->select('soal_id, soal_nm')
+            ->where([
+                'no_soal'     => $no_soal,
+                'group_id'    => $group_id,
+                'materi'      => $materi,
+                'kolom_id'    => $kolom_id,
+                'sk_group_id' => $sk_group_id,
+                'status_cd'   => 'normal'
+            ])
+            ->limit(1)
+            ->get()
+            ->getRow();
+    }
+
     public function getSoalKreplinFast($no_soal, $group_id, $materi, $kolom_id, $sk_group_id)
     {
         return $this->db->table('soal')
@@ -238,6 +255,7 @@ public function getAllSoalSK() {
                         ->select('*')
                         ->where('soal_id', $soal_id)
                         ->where('status_cd','normal')
+                        ->orderBy('pilihan_nm', 'asc')
                         ->get();
     }
 
@@ -288,6 +306,16 @@ public function getAllSoalSK() {
                         ->where('materi',$materi)
                         ->where('created_user_id',$user_id)
                         ->where('status_cd','normal')
+                        ->get();
+    }
+
+    public function getResponByPrevPkp($soal_id,$group_id,$materi,$user_id) {
+        return $this->db->table('respon')
+                        ->select('*')
+                        ->where('soal_id',$soal_id)
+                        ->where('group_id',$group_id)
+                        ->where('materi',$materi)
+                        ->where('created_user_id',$user_id)
                         ->where('status_cd','normal')
                         ->get();
     }
@@ -953,6 +981,19 @@ public function getAllSoalSK() {
                         ->where('a.group_id',$group_id)
                         ->where('a.materi',$materi)
                         ->where('a.kolom_id',$kolom_id)
+                        ->where('a.status_cd','normal')
+                        ->get();
+    }
+
+    public function getSoalPkp($no_soal,$group_id,$materi,$kolom_id, $sk_group_id) {
+        return $this->db->table('soal a')
+                        ->select('*')
+                        ->join('group_soal b','b.group_soal_id=a.group_id','left')
+                        ->where('a.no_soal',$no_soal)
+                        ->where('a.group_id',$group_id)
+                        ->where('a.materi',$materi)
+                        ->where('a.kolom_id',$kolom_id)
+                        ->where('a.sk_group_id', $sk_group_id)
                         ->where('a.status_cd','normal')
                         ->get();
     }

@@ -1100,6 +1100,90 @@ class Hasil extends BaseController
 		$pdf->Output('invoice.pdf', 'I');
     }
 
+    public function hasilexcelpkp() {
+        if ($this->session->get("user_nm") == "") {
+			return redirect('/');
+		}
+        $sekarang = new \DateTime("today");
+        $start_dttm = $this->request->getUri()->getSegment(4);
+        $end_dttm = $this->request->getUri()->getSegment(5);
+        $group_id = $this->request->getUri()->getSegment(6);
+        $materi_id = $this->request->getUri()->getSegment(7);
+        $res = $this->soalmodel->getHasil($start_dttm, $end_dttm, $group_id)->getResult();
+        $getsoal = $this->soalmodel->getSoalBygrmt($group_id, $materi_id)->getResult();
+        $resGroup = $this->soalmodel->getGroupByid($group_id)->getResult();
+        $fileName = $start_dttm."_laporan_".$resGroup[0]->group_nm.".xlsx"; 
+		$spreadsheet = new Spreadsheet();
+		$sheet = $spreadsheet->setActiveSheetIndex(0);
+        $columnsoal = "F";
+        $sheet->getStyle('A:DG')->getAlignment()->setHorizontal('center');
+        $sheet->getColumnDimension('A')->setAutoSize(true);
+        $sheet->getColumnDimension('B')->setAutoSize(true);
+        $sheet->getColumnDimension('C')->setAutoSize(true);
+        $sheet->getColumnDimension('D')->setAutoSize(true);
+        $sheet->getColumnDimension('E')->setAutoSize(true);
+        $sheet->getColumnDimension('F')->setAutoSize(true);
+        $sheet->getColumnDimension('G')->setAutoSize(true);
+        $sheet->getColumnDimension('H')->setAutoSize(true);
+        $sheet->setCellValue("A" . "1", "No.");
+        $sheet->setCellValue("B" . "1", "No. Test");
+        $sheet->setCellValue("C" . "1", "Nama");
+        $sheet->setCellValue("D" . "1", "NRP/NIP");
+        $sheet->setCellValue("E" . "1", "PANGKAT");
+        $sheet->setCellValue("F" . "1", "SATKER");
+        $sheet->setCellValue("G" . "1", "POLDA");
+        $sheet->setCellValue("H" . "1", "JABATAN");
+
+        
+        foreach ($getsoal as $key) {
+            $sheet->getColumnDimension($columnsoal)->setAutoSize(true);
+            $sheet->setCellValue($columnsoal . "1", $key->no_soal);
+            $columnsoal++;
+        }
+        $sheetData = $spreadsheet->setActiveSheetIndex(0);
+        $column = 2;
+        $columnpil = 2;
+        $no = 1;
+        
+        foreach ($res as $val) {
+                $thn = date("Y",strtotime($val->tanggal_lahir));
+
+			$sheetData->setCellValue("A" . $column, $no);
+			$sheetData->setCellValue("B" . $column, $val->no_antrian);
+			$sheetData->setCellValue("C" . $column, $val->person_nm);
+			$sheetData->setCellValue("D" . $column, $val->nrp);
+			$sheetData->setCellValue("E" . $column, $val->pangkat);
+			$sheetData->setCellValue("F" . $column, $val->satker);
+			$sheetData->setCellValue("G" . $column, "");
+			$sheetData->setCellValue("H" . $column, "");
+            $column++;
+            $res_respon = $this->soalmodel->getResponByUser($start_dttm,$end_dttm,$val->user_id,$group_id,$materi_id)->getResult();
+            // echo json_encode($res_respon);exit;
+            $columnpilihan = "I";
+            foreach ($res_respon as $keys) {
+                $sheetData->setCellValue($columnpilihan . $columnpil, $keys->pilihan_nm);
+                $columnpilihan++;
+            }
+            
+            $columnpil++;
+            $no++;
+		}
+
+		$writer = new Xlsx($spreadsheet);
+		$filepath = "filehasil/materi_a/".$fileName;
+		$writer->save($filepath);
+ 
+		header("Content-Type: application/vnd.ms-excel");
+		header('Content-Disposition: attachment; filename="' . basename($filepath) . '"');
+		header('Expires: 0');
+		header('Cache-Control: must-revalidate');
+		header('Pragma: public');
+		header('Content-Length: ' . filesize($filepath));
+		flush();
+		readfile($filepath);
+		exit;
+    }
+
     public function hasilexcel() {
         if ($this->session->get("user_nm") == "") {
 			return redirect('/');
