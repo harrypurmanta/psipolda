@@ -15,7 +15,7 @@ $request = \Config\Services::request();
     <link rel="stylesheet" href="<?= base_url() ?>/dist/css/AdminLTE.min.css">
     <link rel="stylesheet" href="<?= base_url() ?>/dist/css/skins/_all-skins.min.css">
     <link rel="stylesheet" href="<?= base_url() ?>/plugins/sweetalert2/sweetalert2.css">
-    <link rel="icon" href="../../../images/bg/favicon.ico" type="image/gif">
+    <link rel="icon" href="images/bg/favicon.ico" type="image/gif">
     <link rel="stylesheet"
         href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,600,700,300italic,400italic,600italic">
     <style>
@@ -145,33 +145,25 @@ $request = \Config\Services::request();
                         </div>
                     </div>
                     <div class="row" style="margin-top:10px;">
-                        <div class="col-md-12 text-center" style="display:flex;">
-                            <div class="bg-gray col-md-8" style="border-radius: 5px; margin: 0 auto; min-width: 100%;">
-                            <label style="margin-top:10px;font-size:16px;" for="pertanyaan">Pertanyaan <span id="group_nm"></span> </label>
-                                <?php
-                                    if ($request->uri->getSegment(4) == 2) {
-                                        $style = "min-height:30px;background-color:#aeaebb;border-radius:5px;padding-bottom: 10px;text-align: justify;";
-                                    } else {
-                                        $style = "min-height:140px;background-color:#aeaebb;border-radius:5px;padding-bottom: 10px;text-align: justify;";
-                                    }
-                                    
-                                ?>
+                        <div class="col-md-12">
+                            <div class="bg-gray col-md-12" style="border-radius:5px;">
+                            <label style="margin-top:10px;font-size:18px;" for="pertanyaan">Pertanyaan <span id="group_nm"></span> </label>
                                 <div id="dv_soal" class="col-md-12"
-                                    style="<?= $style ?>">
-                                    <label id="p_no_soal" style="margin-top:10px;font-size:18px;">Soal no. <?= $soal[0]->no_soal ?></label>
-                                    <p id="inp_soal_nm" style="margin:5px;font-size:18px;"><?= $soal[0]->soal_nm ?></p>
+                                    style="min-height:140px;background-color:#aeaebb;border-radius:5px;padding-bottom: 5px;text-align: justify;">
+                                    <label id="p_no_soal" style="margin-top:10px;font-size:18px;"></label>
+                                    <p id="inp_soal_nm" style="margin:5px;font-size:18px;"></p>
                                     <div id="dv_img_soal" style="margin:5px;font-size:16px;"></div>
-                                    <input type="hidden" value="<?= $soal[0]->soal_id ?>" id="inp_soal_id">
+                                    <input type="hidden" value="" id="inp_soal_id">
                                     <input type="hidden" value="1" id="inp_no_soal">
-                                    <input type="hidden" value="<?= $soal[0]->kolom_id ?>" id="inp_kolom_id">
+                                    <input type="hidden" value="0" id="inp_kolom_id">
                                 </div>
                                 <div class="row col-md-12" id="dv_main_jawaban" style="margin-top:10px;padding-bottom: 50px;">
-                                    
+                                    <div class="col-md-12 text-center">
+                                    </div>
                                 </div>
                                 <input type="hidden" value="" id="inp_jawaban_id">
                                 <input type="hidden" value="" id="inp_pilihan_nm">
                             </div>
-                            
                         </div>
                     </div>
                 </section>
@@ -196,28 +188,17 @@ $request = \Config\Services::request();
             wrapping: false
         });
     });
-
+    
     var timers;
     $(document).ready(function() {
         let group_id = <?= $request->uri->getSegment(4) ?>;
         if (group_id == 2) {
             $('#inp_soal_nm').css('padding-bottom','0');
-            // $('#dv_soal').css('display','none');
         }
         setTimeout(() => {
             startujian("start","","");
         }, 1000);
     });
-
-    // function selectJawaban(jawaban_id, pilihan_nm) {
-    //     let dv = document.getElementsByClassName("jawaban_dv");
-    //     for (let index = 0; index < dv.length; index++) {
-    //         dv[index].style.border = "none";
-    //     }
-    //     $("#inp_jawaban_id").val(jawaban_id);
-    //     $("#inp_pilihan_nm").val(pilihan_nm);
-    //     document.getElementById("dv_jawaban_" + jawaban_id).style.border = "thick solid #00a65a";
-    // }
 
     function setboxsoal(no_soal) {
         no_soalx = no_soal + 1;
@@ -226,7 +207,28 @@ $request = \Config\Services::request();
         startujian("prev");
     }
 
-    function startujian(proc,jawaban_id, pilihan_nm) {
+    function updateFinishRespon(materi_id,group_id) {
+        $.ajax({
+            url: "<?= base_url('katosus/updateFinishRespon') ?>",
+            type: "post",
+            dataType: "json",
+            data: {
+                "materi_id": materi_id,
+                "group_id": group_id
+            },
+            beforeSend: function() {
+                $("#loader-wrapper").removeClass("d-none")
+            },
+            success: function(data) {
+                $("#loader-wrapper").addClass("d-none");
+            },
+            error: function() {
+                Swal.fire("Ada terjadi sesuatu, mohon hubungi administrator", "", "warning");
+            }
+        });
+    }
+
+    function startujian(proc,jawaban_id,pilihan_nm) {
         let soal_id = $("#inp_soal_id").val();
         // let jawaban_id = $("#inp_jawaban_id").val();
         let group_id = <?= $request->uri->getSegment(4) ?>;
@@ -236,7 +238,7 @@ $request = \Config\Services::request();
         let materi = <?= $request->uri->getSegment(3) ?>;
         let waktu = document.getElementById('countdown').textContent;
         $.ajax({
-            url: "<?= base_url('tryout/startujian') ?>",
+            url: "<?= base_url('katosus/katosusujian') ?>",
             type: "post",
             dataType: "json",
             data: {
@@ -255,7 +257,8 @@ $request = \Config\Services::request();
             },
             success: function(data) {
                 if (data.proc == "selesai") {
-                    Swal.fire({
+                    updateFinishRespon(<?= $request->uri->getSegment(3) ?>,<?= $request->uri->getSegment(4) ?>);
+                        Swal.fire({
                             title: "anda telah selesai mengerjakan Test, klik Ok untuk keluar",
                             icon: "info",
                             showCancelButton: false,
@@ -269,24 +272,22 @@ $request = \Config\Services::request();
                                     text: "Anda telah menyelesaikan tes ini",
                                     icon: "success"
                                 });
-                                updateFinishRespon(materi,group_id);
-                                window.location.href = "<?= base_url() ?>/tryout/hasiltryout/" + materi + "/" +group_id;
+                                updateFinishRespon(<?= $request->uri->getSegment(3) ?>,<?= $request->uri->getSegment(4) ?>);
+                                window.location.href = "<?= base_url() ?>/katosus/hasiltryout/"+<?= $request->uri->getSegment(3) ?>+"/" +<?= $request->uri->getSegment(4) ?>;
                             }
                         });
-
                     
                 } else {
-                    if (data == "jawaban_kosong") {
-                        alert("Jawaban belum dipilih");
+                    if (data == "jawaban_kosong") {;
+                        Swal.fire({
+                                    title: "Jawaban belum dipilih",
+                                    text: "Anda belum memilih jawaban",
+                                    icon: "warning"
+                                });
                     } else {
-                        if (data.group_id == 1 && data.no_soal == 1) {
+                        if (data.no_soal == 1) {
                             window.clearInterval(timers);
-                            countdown(5400);
-                        } else if (data.group_id == 2 && data.no_soal == 1) {
-                            $('#inp_soal_nm').css('padding-bottom','0');
-                            // $('#dv_img_soal').css('display','none');
-                            window.clearInterval(timers);
-                            countdown(5400);
+                            countdown(3600);
                         } 
 
                         $("#inp_soal_id").val(data.soal_id);
@@ -311,38 +312,9 @@ $request = \Config\Services::request();
                     // $("#loader-wrapper").addClass("d-none");
 
                 }
-
-
-                let dv = document.getElementsByClassName("jawaban_dv");
-                for (let index = 0; index < dv.length; index++) {
-                    dv[index].style.border = "none";
-                }
-
-
             },
             error: function(e) {
                 alert(e.responseText);
-            }
-        });
-    }
-
-    function updateFinishRespon(materi_id,group_id) {
-        $.ajax({
-            url: "<?= base_url('tryout/updateFinishRespon') ?>",
-            type: "post",
-            dataType: "json",
-            data: {
-                "materi_id": materi_id,
-                "group_id": group_id
-            },
-            beforeSend: function() {
-                $("#loader-wrapper").removeClass("d-none")
-            },
-            success: function(data) {
-                $("#loader-wrapper").addClass("d-none");
-            },
-            error: function() {
-                Swal.fire("Ada terjadi sesuatu, mohon hubungi administrator", "", "warning");
             }
         });
     }
@@ -374,7 +346,7 @@ $request = \Config\Services::request();
             $("#countdown").text(convertSeconds(seconds));
             if (seconds === 0) {
                 let grp_id = group_id + 1;
-                window.location.href = "<?= base_url() ?>/tryout/hasiltryout/" + materi + "/" +group_id;
+                window.location.href = "<?= base_url() ?>/materi/pilihanMateri/" + materi + "/" + grp_id;
             } else {
                 //Do nothing
             }

@@ -2,67 +2,44 @@
 
 namespace App\Controllers;
 use App\Models\Soalmodel;
-use PhpOffice\PhpSpreadsheet\Spreadsheet;
-use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
-class Tryout extends BaseController
+use App\Models\Latihanmodel;
+
+
+class Katosus extends BaseController
 {
-    protected $soalmodel;
-    public function __construct()
+
+	protected $soalmodel;
+	protected $latihanmodel;
+	protected $session;
+	public function __construct()
 	{
 		$this->session = \Config\Services::session();
+        $this->session->start();
         $this->soalmodel = new Soalmodel();
+        $this->latihanmodel = new Latihanmodel();
 	}
 
     public function index()
     {
         $request = \Config\Services::request();
         $materi_id = $request->uri->getSegment(2);
-        $data['group'] = $this->soalmodel->getGroup()->getResult();
-        $data['soal'] = $this->soalmodel->getSoal(1,1,$materi_id,0)->getResult();
-        $data['jawaban'] = $this->soalmodel->getjawaban($data['soal'][0]->soal_id)->getResult();
-        $data['total_soal'] = $this->soalmodel->getTotalSoal(1,$request->uri->getSegment(2))->getResult();
-        return view('front/tryout',$data);
-    }
-
-    public function biodata() {
-        $request = \Config\Services::request();
-        $materi_id = $request->uri->getSegment(3);
-        $group_id = $request->uri->getSegment(4);
-        
-        return view('front/biodata');
+        $data['group'] = $this->latihanmodel->getSKgroup()->getResult();
+        return view('front/katosus/katosus',$data);
     }
 
     public function ujian() {
         $request = \Config\Services::request();
-        $materi_id = $request->uri->getSegment(3);
-        $data['group'] = $this->soalmodel->getGroup()->getResult();
-        $kolom_id = 0;
-        
-        $data['soal'] = $this->soalmodel->getSoal(1,$request->uri->getSegment(4),$materi_id,$kolom_id)->getResult();
-        // print_r($request->uri->getSegment(4));exit;
-        $data['jawaban'] = $this->soalmodel->getjawaban($data['soal'][0]->soal_id)->getResult();
-        $data['total_soal'] = $this->soalmodel->getTotalSoal(1,$request->uri->getSegment(3))->getResult();
-        return view('front/tryout',$data);
+        return view('front/katosus/ujian');
     }
 
-    public function petunjukpertama() {
+    public function petunjukkatosus() {
         $request = \Config\Services::request();
         $data = [
             'materi_id' => $request->uri->getSegment(3),            
             'group_id' => $request->uri->getSegment(4)
         ];
 
-        return view('front/petunjuk1',$data);
-    }
-
-    public function petunjukkedua() {
-        $request = \Config\Services::request();
-        $data = [
-            'materi_id' => $request->uri->getSegment(3),            
-            'group_id' => $request->uri->getSegment(4)
-        ];
-
-        return view('front/petunjuk2',$data);
+        return view('front/katosus/petunjukkatosus',$data);
     }
 
     public function updateFinishRespon() {
@@ -78,21 +55,7 @@ class Tryout extends BaseController
         echo json_encode($reset);
     }
 
-    public function insertNoTest() {
-        if ($this->session->get("user_nm") == "") {
-			return redirect('/');
-		}
-        $request = \Config\Services::request();
-        $dataexam = [
-            "group_id" => $group_id,
-            "materi_id" => $materi,
-            "user_id" => $this->session->user_id,
-            "no_antrian" => $no_antrian,
-        ];
-        $insertexam = $this->soalmodel->insertexam($dataexam);
-    }
-
-    public function startujian() {
+    public function katosusujian() {
         if ($this->session->get("user_nm") == "") {
 			return redirect('/');
 		}
@@ -117,49 +80,6 @@ class Tryout extends BaseController
         } else if ($proc == "next" && $jawaban_id == "") {
             echo json_encode("jawaban_kosong");
         } else {
-            // $sl_rt = $this->soalmodel->selectRemainingTime($this->session->user_id,$materi,"tryout")->getResult();
-            // if (count($sl_rt)>0) {
-            //     if ($sl_rt[0]->isFinish == "proses" && $proc == "start") {
-            //         $cnvrt = str_replace(":","",$sl_rt[0]->remaining_time);
-            //         $sisawaktu = $cnvrt / 60;
-            //     } else {
-            //         $data = [
-            //             "remaining_time" => $waktu,
-            //             "date" => $date,
-            //             "status_cd" => "normal"
-            //         ];
-            //         $this->soalmodel->updateRemainingTime($this->session->user_id,$materi,$data,"tryout");
-            //     }
-                
-            // } else {
-            //     $data = [
-            //         "remaining_time" => $waktu,
-            //         "date" => $date,
-            //         "status_cd" => "normal",
-            //         "user_id" => $this->session->user_id,
-            //         "materi_id" => $materi,
-            //         "type" => "tryout",
-            //         "isFinish" => "proses"
-            //     ];
-            //     $this->soalmodel->insertRemainingTime($data);
-            // }
-
-            // if ($proc == "start") {
-            //     $notes = $this->soalmodel->getLastNoTes($this->session->user_id,$group_id)->getResult();
-            //     if (count($notes)>0) {
-            //         $no_antrian = $notes[0]->no_antrian + 1;
-            //     } else {
-            //         $no_antrian = 1;
-            //     }
-                
-            //     $dataexam = [
-            //         "group_id" => $group_id,
-            //         "materi_id" => $materi,
-            //         "user_id" => $this->session->user_id,
-            //         "no_antrian" => $no_antrian,
-            //     ];
-            //     $insertexam = $this->soalmodel->insertexam($dataexam);
-            // }
             
             if ($proc == "prev" || $proc == "prevsoal" || $proc == "start") {
 
@@ -202,13 +122,6 @@ class Tryout extends BaseController
                 }
             }
                 if ($proc == "selesai") {
-                    // $data = [
-                    //     "remaining_time" => $waktu,
-                    //     "date" => $date,
-                    //     "status_cd" => "normal",
-                    //     "isFinish" => "finish"
-                    // ];
-                    // $this->soalmodel->updateRemainingTime($this->session->user_id,$materi,$data,"tryout");
                     echo json_encode(array("proc" => $proc));
                 } else {
                     if ($proc == "prevsoal") {
@@ -227,18 +140,13 @@ class Tryout extends BaseController
                         $group_id = $res[0]->group_id;   
                         $group_nm = $res[0]->group_nm;   
                         $kolom_id = $res[0]->kolom_id;
-                        // $res_ttlsoal = $this->soalmodel->getTotalSoal($group_id,$materi)->getResult();
 
                         $getjawaban = $this->soalmodel->getjawaban($res[0]->soal_id)->getResult();
                         
                         foreach ($getjawaban as $key) {
                             
                             $jawaban .= " <button id='dv_jawaban_".$key->jawaban_id."' onclick='startujian(\"next\",".$key->jawaban_id.",\"".$key->pilihan_nm."\")' class='btn btn-block btn-outline-primary' style='text-align:left;font-size:18px;margin-top:20px;padding-top:10px;padding-bottom:10px;border: 2px solid black;white-space: normal;'>
-                                            <b>".$key->pilihan_nm.".</b> ".$key->jawaban_nm."
-                                            </button>";
-
-                            // $jawaban .= "<div class='col-md-12 jawaban_dv' id='dv_jawaban_".$key->jawaban_id."' onclick='startujian(\"next\",".$key->jawaban_id.",\"".$key->pilihan_nm."\")' style='margin-top:10px;margin-bottom:10px;padding-top:5px;padding-bottom:5px;background-color:#aeaebb;border-radius:5px;text-align: justify;'> <label for='pilihan_nm'>".$key->pilihan_nm.". </label> <span>".$key->jawaban_nm."</span>
-                            //     </div>";
+                                            <b>".$key->pilihan_nm.".</b> ".$key->jawaban_nm."</button>";
                         }
                        
 
@@ -248,21 +156,16 @@ class Tryout extends BaseController
 
                     $button = "";
                         echo json_encode(array("soal_id"=>$soal_id, "soal_nm" => $soal_nm,"no_soal"=>$no_soal, "group_id"=>$group_id, "group_nm"=>$group_nm,"kolom_id"=>$kolom_id, "jawaban_nm" => $jawaban, "boxnomorsoal" => $boxnomorsoal, "button" => $button, "proc" => $proc,"jawaban_idx"=>$jawaban_idx,"pilihan_nms"=>$pilihan_nms));
-                   
-                    
                 }
         }
         
     }
 
-
     public function hasiltryout() {
         $request = \Config\Services::request();
         $user_id = $this->session->user_id;
         $materi_id = $request->uri->getSegment(3);
-        $group_id = $request->uri->getSegment(4);
         
-        return view('front/hasiltryout');
+        return view('front/katosus/hasiltryout');
     }
-
 }

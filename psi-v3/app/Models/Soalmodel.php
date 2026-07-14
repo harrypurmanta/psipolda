@@ -827,7 +827,8 @@ public function getAllSoalSK() {
                         ->where('a.group_id', $group_id)
                         ->where('a.created_dttm >=', $start_dttm.' 00:00:00')
                         ->where('a.created_dttm <=', $end_dttm.' 23:59:59')
-                        ->orderBy('a.no_antrian', 'ASC')
+                        ->orderBy('a.user_exam', 'ASC')
+                        ->limit(1)
                         ->get();
     }
 
@@ -842,6 +843,20 @@ public function getAllSoalSK() {
                         ->where('a.created_dttm >=', $start_dttm.' 00:00:00')
                         ->where('a.created_dttm <=', $end_dttm.' 23:59:59')
                         ->orderBy('a.no_soal', 'ASC')
+                        ->get();
+    }
+
+    public function getResponByUserPkp($start_dttm,$end_dttm,$user_id,$group_id,$materi_id) {
+        return $this->db->table('respon a')
+                        ->select('*')
+                        ->join('jawaban b','b.jawaban_id=a.jawaban_id')
+                        ->where('a.created_user_id',$user_id)
+                        ->where('a.group_id',$group_id)
+                        ->where('a.materi',$materi_id)
+                        ->where('a.status_cd','finish')
+                        ->where('a.created_dttm >=', $start_dttm.' 00:00:00')
+                        ->where('a.created_dttm <=', $end_dttm.' 23:59:59')
+                        ->orderBy('a.respon_id', 'ASC')
                         ->get();
     }
 
@@ -916,6 +931,18 @@ public function getAllSoalSK() {
                         ->get();
     }
 
+    public function getResponKatosus($soal_id,$group_id,$materi,$user_id) {
+        return $this->db->table('respon a')
+                        ->select('*')
+                        ->join('soal b','b.soal_id=a.soal_id')
+                        ->where('a.soal_id',$soal_id)
+                        ->where('a.group_id',$group_id)
+                        ->where('a.materi',$materi)
+                        ->where('a.created_user_id',$user_id)
+                        ->where('a.status_cd', 'normal')
+                        ->get();
+    }
+
     public function getResponDbi($soal_id,$group_id,$materi,$user_id) {
         return $this->db->table('respon a')
                         ->select('*')
@@ -950,6 +977,17 @@ public function getAllSoalSK() {
                         ->update();
     }
 
+    public function updateResponKatosus($soal_id,$jawaban_id,$group_id,$materi,$user_id,$data) {
+        return $this->db->table('respon')
+                        ->set($data)
+                        ->where('soal_id', $soal_id)
+                        ->where('group_id', $group_id)
+                        ->where('materi', $materi)
+                        ->where('created_user_id', $user_id)
+                        ->where('status_cd', 'normal')
+                        ->update();
+    }
+
     public function updateResponDbi($soal_id,$jawaban_id,$group_id,$materi,$user_id,$data) {
         return $this->db->table('respon')
                         ->set($data)
@@ -974,6 +1012,18 @@ public function getAllSoalSK() {
     }
 
     public function getSoalMateriG($no_soal,$group_id,$materi,$kolom_id) {
+        return $this->db->table('soal a')
+                        ->select('*')
+                        ->join('group_soal b','b.group_soal_id=a.group_id','left')
+                        ->where('a.no_soal',$no_soal)
+                        ->where('a.group_id',$group_id)
+                        ->where('a.materi',$materi)
+                        ->where('a.kolom_id',$kolom_id)
+                        ->where('a.status_cd','normal')
+                        ->get();
+    }
+
+    public function getSoalKatosus($no_soal,$group_id,$materi,$kolom_id) {
         return $this->db->table('soal a')
                         ->select('*')
                         ->join('group_soal b','b.group_soal_id=a.group_id','left')

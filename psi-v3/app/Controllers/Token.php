@@ -13,6 +13,8 @@ class Token extends BaseController
     protected $usermodel;
     protected $soalmodel;
     protected $tokenmodel;
+    protected $session;
+
     public function __construct()
 	{
 		$this->session = \Config\Services::session();
