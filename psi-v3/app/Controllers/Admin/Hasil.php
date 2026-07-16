@@ -1526,18 +1526,16 @@ class Hasil extends BaseController
         $fileName = $start_dttm."_laporan_".$resGroup[0]->group_nm.".xlsx"; 
 		$spreadsheet = new Spreadsheet();
 		$sheet = $spreadsheet->setActiveSheetIndex(0);
-        $columnsoal = "F";
+        $columnsoal = "E";
         $sheet->getStyle('A:DG')->getAlignment()->setHorizontal('center');
         $sheet->getColumnDimension('A')->setAutoSize(true);
         $sheet->getColumnDimension('B')->setAutoSize(true);
         $sheet->getColumnDimension('C')->setAutoSize(true);
         $sheet->getColumnDimension('D')->setAutoSize(true);
-        $sheet->getColumnDimension('E')->setAutoSize(true);
         $sheet->setCellValue("A" . "1", "No.");
         $sheet->setCellValue("B" . "1", "No. Test");
         $sheet->setCellValue("C" . "1", "Nama");
-        $sheet->setCellValue("D" . "1", "Tahun Lahir");
-        $sheet->setCellValue("E" . "1", "Jenis Kelamin");
+        $sheet->setCellValue("D" . "1", "Jenis Kelamin");
 
         
         foreach ($getsoal as $key) {
@@ -1553,9 +1551,9 @@ class Hasil extends BaseController
         foreach ($res as $val) {
             $tanggal_lahir = new \DateTime($val->tanggal_lahir);
             if ($val->gender_cd == "m") {
-                $sex = "L";
+                $sex = "PRIA";
             } else {
-                $sex = "P";
+                $sex = "WANITA";
             }
             if ($tanggal_lahir > $sekarang) { 
                 $thn = "0";
@@ -1565,12 +1563,11 @@ class Hasil extends BaseController
 			$sheetData->setCellValue("A" . $column, $no);
 			$sheetData->setCellValue("B" . $column, $val->no_antrian);
 			$sheetData->setCellValue("C" . $column, $val->person_nm);
-			$sheetData->setCellValue("D" . $column, $thn);
-			$sheetData->setCellValue("E" . $column, $sex);
+			$sheetData->setCellValue("D" . $column, $sex);
             $column++;
             $res_respon = $this->soalmodel->getResponByUser($start_dttm,$end_dttm,$val->user_id,$group_id,$materi_id)->getResult();
             // echo json_encode($res_respon);exit;
-            $columnpilihan = "F";
+            $columnpilihan = "E";
             foreach ($res_respon as $keys) {
                 $sheetData->setCellValue($columnpilihan . $columnpil, $keys->pilihan_nm);
                 $columnpilihan++;
@@ -1581,7 +1578,10 @@ class Hasil extends BaseController
 		}
 
 		$writer = new Xlsx($spreadsheet);
-		$filepath = "filehasil/materi_a/".$fileName;
+		$filepath = "filehasil/materi_k/".$fileName;
+        if (!file_exists("filehasil/materi_k/")) {
+            mkdir("filehasil/materi_k/", 0777, true);
+        }
 		$writer->save($filepath);
  
 		header("Content-Type: application/vnd.ms-excel");

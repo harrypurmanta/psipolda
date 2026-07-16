@@ -827,8 +827,8 @@ public function getAllSoalSK() {
                         ->where('a.group_id', $group_id)
                         ->where('a.created_dttm >=', $start_dttm.' 00:00:00')
                         ->where('a.created_dttm <=', $end_dttm.' 23:59:59')
-                        ->orderBy('a.user_exam', 'ASC')
-                        ->limit(1)
+                        // ->orderBy('a.user_exam', 'ASC')
+                        // ->limit(1)
                         ->get();
     }
 
