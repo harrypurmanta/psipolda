@@ -200,14 +200,14 @@ class Hasilmodel extends Model
 
     public function getUserHasilKreplin($start_dttm,$end_dttm,$group_id) {
         return $this->db->table('respon a')
-                        ->select('*')
+                        ->select('c.person_nm, c.satuan, DATE(c.birth_dttm) AS birth_dttm, c.birth_place, c.gender_cd, c.cellphone, b.user_id, a.created_user_id')
                         ->join('users b','b.user_id = a.created_user_id')
                         ->join('person c','c.person_id = b.person_id')
                         ->where('a.created_dttm >=', $start_dttm.' 00:00:00')
                         ->where('a.created_dttm <=', $end_dttm.' 23:59:59')
                         ->where('a.group_id',$group_id)
-                        ->groupBy('a.created_user_id')
-                        ->orderBy('a.no_soal')
+                        ->groupBy('a.created_user_id, b.user_id, c.person_nm, c.satuan, c.birth_dttm, c.birth_place, c.gender_cd, c.cellphone')
+                        ->orderBy('a.created_user_id')
                         ->get(); 
     }
 
@@ -269,14 +269,14 @@ class Hasilmodel extends Model
 
     public function getUserHasilDass($start_dttm,$end_dttm,$group_id) {
         return $this->db->table('respon a')
-                        ->select('*')
+                        ->select('c.person_nm, c.satuan, DATE(c.birth_dttm) AS birth_dttm, c.birth_place, c.gender_cd, c.cellphone, b.user_id, a.created_user_id')
                         ->join('users b','b.user_id = a.created_user_id')
                         ->join('person c','c.person_id = b.person_id')
                         ->where('a.created_dttm >=', $start_dttm.' 00:00:00')
                         ->where('a.created_dttm <=', $end_dttm.' 23:59:59')
                         ->where('a.group_id',$group_id)
-                        ->groupBy('a.created_user_id')
-                        ->orderBy('a.no_soal')
+                        ->groupBy('a.created_user_id, b.user_id, c.person_nm, c.satuan, c.birth_dttm, c.birth_place, c.gender_cd, c.cellphone')
+                        ->orderBy('a.created_user_id')
                         ->get(); 
     }
 

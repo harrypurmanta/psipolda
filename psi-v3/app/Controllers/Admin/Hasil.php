@@ -1020,6 +1020,166 @@ class Hasil extends BaseController
 		$pdf->Output('invoice.pdf', 'I');
     }
 
+    public function hasildasssemuapdf($start_dttm = null, $end_dttm = null) {
+        if ($this->session->get("user_nm") == "") {
+            return redirect('/');
+        }
+        $request = \Config\Services::request();
+        if (!$start_dttm) {
+            $start_dttm = $request->uri->getSegment(4);
+        }
+        if (!$end_dttm) {
+            $end_dttm = $request->uri->getSegment(5);
+        }
+        if (!$start_dttm) {
+            $start_dttm = date("Y-m-d");
+        }
+        if (!$end_dttm) {
+            $end_dttm = date("Y-m-d");
+        }
+
+        $group_id = 4;
+        $users = $this->usermodel->getUserHasilDass($start_dttm, $end_dttm, $group_id)->getResult();
+
+        if (empty($users)) {
+            echo "<script>alert('Data tidak ditemukan pada rentang tanggal tersebut.');window.close();</script>";
+            return;
+        }
+
+        $pdf = new TCPDF('P', PDF_UNIT, 'A4', true, 'UTF-8', false);
+        $pdf->SetCreator(PDF_CREATOR);
+        $pdf->SetAuthor('Bagian Psikologi Polda Sumsel');
+        $pdf->SetTitle('Hasil Tes DASS-42');
+        $pdf->SetSubject('Hasil Tes DASS-42');
+        $pdf->setPrintHeader(false);
+        $pdf->setPrintFooter(false);
+
+        foreach ($users as $u) {
+            $user_id = $u->user_id;
+            $user = $this->usermodel->getbyUserId($user_id)->getResult();
+            if (empty($user)) {
+                continue;
+            }
+
+            $sekarang = new \DateTime("today");
+            $thn_lahir = "0";
+            if (!empty($user[0]->birth_dttm)) {
+                $tanggal_lahir = new \DateTime($user[0]->birth_dttm);
+                if ($tanggal_lahir <= $sekarang) { 
+                    $thn_lahir = $sekarang->diff($tanggal_lahir)->y;
+                }
+            }
+
+            $tanggal_pemeriksaan = $this->usermodel->getTanggalTes($user_id, 4)->getResult();
+            $tgl_tes = (!empty($tanggal_pemeriksaan) && !empty($tanggal_pemeriksaan[0]->created_dttm)) 
+                       ? date('d-m-Y', strtotime($tanggal_pemeriksaan[0]->created_dttm)) 
+                       : '-';
+
+            $depression = $this->usermodel->getDepression($user_id, 4, 5)->getResult();
+            $anxiety = $this->usermodel->getAnxiety($user_id, 4, 6)->getResult();
+            $stress = $this->usermodel->getStess($user_id, 4, 7)->getResult();
+
+            $dep_val = !empty($depression) ? ($depression[0]->jumlah_d ?? 0) : 0;
+            $anx_val = !empty($anxiety) ? ($anxiety[0]->jumlah_a ?? 0) : 0;
+            $str_val = !empty($stress) ? ($stress[0]->jumlah_s ?? 0) : 0;
+
+            $ret = "<h2 style=\"text-align:center;\">DASS-42</h2>
+                    <hr>
+                    <div>
+                    <table border=\"0\">
+                        <tbody>
+                            <tr>
+                                <td class=\"text-left text-bold\" width=\"150\">Nama</td>
+                                <td class=\"text-center\" width=\"10\">:</td>
+                                <td class=\"text-left\">". ($user[0]->person_nm ?? '') ."</td>
+                            </tr>
+                            <tr>
+                                <td class=\"text-left text-bold\" width=\"150\">Pangkat/NRP</td>
+                                <td class=\"text-center\" width=\"10\">:</td>
+                                <td class=\"text-left\">". ($user[0]->pangkat ?? '') ." / ". ($user[0]->nrp ?? '') ."</td>
+                            </tr>
+                            <tr>
+                                <td class=\"text-left text-bold\" width=\"150\">Kesatuan</td>
+                                <td class=\"text-center\" width=\"10\">:</td>
+                                <td class=\"text-left\">". ($user[0]->satuan_nm ?? '') ."</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                            <table border=\"0\">
+                                <tbody>
+                                    <tr>
+                                        <td class=\"text-left text-bold\" width=\"150\">Jenis Kelamin/Usia</td>
+                                        <td class=\"text-center\" width=\"10\">:</td>
+                                        <td class=\"text-left\">". (($user[0]->gender_cd ?? '')=='m'?'Laki-laki':'Perempuan') ." / ". $thn_lahir ."</td>
+                                    </tr>
+                                    <tr>
+                                        <td class=\"text-left text-bold\" width=\"150\">Tanggal Pemeriksaan</td>
+                                        <td class=\"text-center\" width=\"10\">:</td>
+                                        <td class=\"text-center\">". $tgl_tes ."</td>
+                                    </tr>
+                                    <tr>
+                                        <td class=\"text-left text-bold\" width=\"150\">Pendidikan</td>
+                                        <td class=\"text-center\" width=\"10\">:</td>
+                                        <td class=\"text-left\">". ($user[0]->pendidikan_nm ?? '') ."</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    <hr/>
+                    <div class=\"table-responsive\">
+                            <table border=\"1\">
+                            <thead>
+                                <tr>
+                                    <th style=\"text-align:center;\" width=\"40%\"></th>
+                                    <th style=\"text-align:center;background-color:#65aaf4;\" width=\"20%\">Depression</th>
+                                    <th style=\"text-align:center;background-color:#65aaf4;\" width=\"20%\">Anxiety</th>
+                                    <th style=\"text-align:center;background-color:#65aaf4;\" width=\"20%\">Stress</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td style=\"padding-left:10px;justify-content:center;align-item:center;vertical-align: middle;background-color:#65aaf4;\" width=\"40%\"> Normal</td>
+                                    <td style=\"font-size: 20px;text-align:center;\" width=\"20%\">". ($dep_val <= 9 ? $dep_val : '') ."</td>
+                                    <td style=\"font-size: 20px;text-align:center;\" width=\"20%\">". ($anx_val <= 7 ? $anx_val : '') ."</td>
+                                    <td style=\"font-size: 20px;text-align:center;\" width=\"20%\">". ($str_val <= 14 ? $str_val : '') ."</td>
+                                </tr>
+                                <tr>
+                                    <td style=\"padding-left:10px;background-color:#65aaf4;\"> Mild</td>
+                                    <td style=\"font-size: 20px;text-align:center;\">". ($dep_val >= 10 && $dep_val <= 13 ? $dep_val : '') ."</td>
+                                    <td style=\"font-size: 20px;text-align:center;\">". ($anx_val >= 8 && $anx_val <= 9 ? $anx_val : '') ."</td>
+                                    <td style=\"font-size: 20px;text-align:center;\">". ($str_val >= 15 && $str_val <= 18 ? $str_val : '') ."</td>
+                                </tr> 
+                                <tr>
+                                    <td style=\"padding-left:10px;background-color:#65aaf4;\"> Moderate</td>
+                                    <td style=\"font-size: 20px;text-align:center;\">". ($dep_val >= 14 && $dep_val <= 20 ? $dep_val : '') ."</td>
+                                    <td style=\"font-size: 20px;text-align:center;\">". ($anx_val >= 10 && $anx_val <= 14 ? $anx_val : '') ."</td>
+                                    <td style=\"font-size: 20px;text-align:center;\">". ($str_val >= 19 && $str_val <= 25 ? $str_val : '') ."</td>
+                                </tr>
+                                <tr>
+                                    <td style=\"padding-left:10px;background-color:#65aaf4;\"> Severe</td>
+                                    <td style=\"font-size: 20px;text-align:center;\">". ($dep_val >= 21 && $dep_val <= 27 ? $dep_val : '') ."</td>
+                                    <td style=\"font-size: 20px;text-align:center;\">". ($anx_val >= 15 && $anx_val <= 19 ? $anx_val : '') ."</td>
+                                    <td style=\"font-size: 20px;text-align:center;\">". ($str_val >= 26 && $str_val <= 33 ? $str_val : '') ."</td>
+                                </tr>
+                                <tr>
+                                    <td style=\"padding-left:10px;background-color:#65aaf4;\"> Extremely Severe</td>
+                                    <td style=\"font-size: 20px;text-align:center;\">". ($dep_val >= 28 ? $dep_val : '') ."</td>
+                                    <td style=\"font-size: 20px;text-align:center;\">". ($anx_val >= 20 ? $anx_val : '') ."</td>
+                                    <td style=\"font-size: 20px;text-align:center;\">". ($str_val >= 34 ? $str_val : '') ."</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>";
+
+            $html = view('admin/hasildasspdf', ['ret' => $ret]);
+            $pdf->addPage();
+            $pdf->writeHTML($html, true, false, true, false, '');
+        }
+
+        $this->response->setContentType('application/pdf');
+        $pdf->Output('hasil_dass_semua_' . $start_dttm . '_' . $end_dttm . '.pdf', 'I');
+    }
+
     public function hasilbdipdf() {
         $request = \Config\Services::request();
         $user_id = $request->uri->getSegment(4);

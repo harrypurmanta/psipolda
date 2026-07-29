@@ -327,7 +327,7 @@ class Usersmodel extends Model
 
     public function getUserHasilDass($start_dttm,$end_dttm,$group_id) {
         return $this->db->table('respon a')
-                        ->select('*')
+                        ->select('c.person_nm, c.satuan, DATE(c.birth_dttm) AS birth_dttm, c.birth_place, c.gender_cd, c.cellphone, b.user_id, a.created_user_id, d.satuan_nm, e.pendidikan_nm')
                         ->join('users b','b.user_id = a.created_user_id')
                         ->join('person c','c.person_id = b.person_id')
                         ->join('satuan d','d.satuan_id = c.satuan')
@@ -336,14 +336,14 @@ class Usersmodel extends Model
                         ->where('a.created_dttm <=', $end_dttm.' 23:59:59')
                         ->where('a.group_id',$group_id)
                         ->where('a.status_cd', 'finish')
-                        ->groupBy('a.created_user_id')
-                        ->orderBy('a.no_soal')
+                        ->groupBy('a.created_user_id, b.user_id, c.person_nm, c.satuan, c.birth_dttm, c.birth_place, c.gender_cd, c.cellphone, d.satuan_nm, e.pendidikan_nm')
+                        ->orderBy('a.created_user_id')
                         ->get(); 
     }
 
     public function getUserHasilDbi($start_dttm, $end_dttm, $group_id) {
         return $this->db->table('respon a')
-                        ->select('*')
+                        ->select('c.person_nm, c.satuan, DATE(c.birth_dttm) AS birth_dttm, c.birth_place, c.gender_cd, c.cellphone, b.user_id, a.created_user_id, d.satuan_nm, e.pendidikan_nm')
                         ->join('users b','b.user_id = a.created_user_id')
                         ->join('person c','c.person_id = b.person_id')
                         ->join('satuan d','d.satuan_id = c.satuan')
@@ -352,15 +352,15 @@ class Usersmodel extends Model
                         ->where('a.created_dttm <=', $end_dttm.' 23:59:59')
                         ->where('a.group_id',$group_id)
                         ->where('a.status_cd', 'finish')
-                        ->groupBy('a.created_user_id')
-                        ->orderBy('a.no_soal')
+                        ->groupBy('a.created_user_id, b.user_id, c.person_nm, c.satuan, c.birth_dttm, c.birth_place, c.gender_cd, c.cellphone, d.satuan_nm, e.pendidikan_nm')
+                        ->orderBy('a.created_user_id')
                         ->get(); 
     }
     
 
     public function getUserHasilPapi($start_dttm,$end_dttm,$group_id) {
         return $this->db->table('respon a')
-                        ->select('*')
+                        ->select('c.person_nm, c.satuan, DATE(c.birth_dttm) AS birth_dttm, c.birth_place, c.gender_cd, c.cellphone, b.user_id, a.created_user_id, d.satuan_nm, e.pendidikan_nm')
                         ->join('users b','b.user_id = a.created_user_id')
                         ->join('person c','c.person_id = b.person_id')
                         ->join('satuan d','d.satuan_id = c.satuan')
@@ -369,14 +369,14 @@ class Usersmodel extends Model
                         ->where('a.created_dttm <=', $end_dttm.' 23:59:59')
                         ->where('a.group_id', $group_id)
                         ->where('a.status_cd', 'finish')
-                        ->groupBy('a.created_user_id')
-                        ->orderBy('a.no_soal')
+                        ->groupBy('a.created_user_id, b.user_id, c.person_nm, c.satuan, c.birth_dttm, c.birth_place, c.gender_cd, c.cellphone, d.satuan_nm, e.pendidikan_nm')
+                        ->orderBy('a.created_user_id')
                         ->get(); 
     }
 
     public function getUserHasilTiu5($start_dttm, $end_dttm, $group_id, $tipesoal) {
         return $this->db->table('respon a')
-                        ->select('*')
+                        ->select('c.person_nm, c.satuan, DATE(c.birth_dttm) AS birth_dttm, c.birth_place, c.gender_cd, c.cellphone, b.user_id, a.created_user_id, d.satuan_nm, e.pendidikan_nm')
                         ->join('users b','b.user_id = a.created_user_id')
                         ->join('person c','c.person_id = b.person_id')
                         ->join('satuan d','d.satuan_id = c.satuan')
@@ -386,8 +386,8 @@ class Usersmodel extends Model
                         ->where('a.group_id',$group_id)
                         ->where('a.materi', $tipesoal)
                         ->where('a.status_cd', 'finish')
-                        ->groupBy('a.created_user_id')
-                        ->orderBy('a.no_soal')
+                        ->groupBy('a.created_user_id, b.user_id, c.person_nm, c.satuan, c.birth_dttm, c.birth_place, c.gender_cd, c.cellphone, d.satuan_nm, e.pendidikan_nm')
+                        ->orderBy('a.created_user_id')
                         ->get(); 
     }
 

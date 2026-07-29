@@ -46,9 +46,10 @@
                                   <input class="form-control" type="date" name="end_dttm" id="end_dttm" value="<?= date("Y-m-d") ?>">
                                 </div>
                             </div>
-                            <div class="col-md-3">
-                                <div class="form-group">
+                            <div class="col-md-6">
+                                <div class="form-group" style="margin-top: 32px;">
                                   <button type="button" onclick="loadDataUserDass()" class="btn btn-primary">Tampilkan</button>
+                                  <button type="button" onclick="unduhdasssemua()" class="btn btn-danger ml-2"><i class="fa fa-file-pdf"></i> Download Semua PDF</button>
                                 </div>
                             </div>
                         </div>
@@ -217,6 +218,15 @@
         }
         function unduhdass(user_id) {
           window.open("<?= base_url() ?>/admin/hasil/hasildasspdf/"+user_id,'_blank');
+        }
+        function unduhdasssemua() {
+          let start_date = $("#start_dttm").val();
+          let end_date = $("#end_dttm").val();
+          if(!start_date || !end_date) {
+            alert("Pilih tanggal awal dan akhir terlebih dahulu!");
+            return;
+          }
+          window.open("<?= base_url() ?>/admin/hasil/hasildasssemuapdf/"+start_date+"/"+end_date,'_blank');
         }
 </script>
 </body>
