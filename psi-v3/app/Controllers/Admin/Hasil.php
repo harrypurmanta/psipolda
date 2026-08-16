@@ -1754,4 +1754,209 @@ class Hasil extends BaseController
 		readfile($filepath);
 		exit;
     }
+
+    public function hasilexcelsrq29() {
+        if ($this->session->get("user_nm") == "") {
+			return redirect('/');
+		}
+        $sekarang = new \DateTime("today");
+        $start_dttm = $this->request->getUri()->getSegment(4);
+        $end_dttm = $this->request->getUri()->getSegment(5);
+        $group_id = $this->request->getUri()->getSegment(6);
+        $materi_id = $this->request->getUri()->getSegment(7);
+        $res = $this->soalmodel->getHasil($start_dttm, $end_dttm, $group_id)->getResult();
+        $getsoal = $this->soalmodel->getSoalBygrmt($group_id, $materi_id)->getResult();
+        $resGroup = $this->soalmodel->getGroupByid($group_id)->getResult();
+        $fileName = $start_dttm."_laporan_".$resGroup[0]->group_nm.".xlsx"; 
+		$spreadsheet = new Spreadsheet();
+		$sheet = $spreadsheet->setActiveSheetIndex(0);
+        $columnsoal = "G";
+        $sheet->getStyle('A:DG')->getAlignment()->setHorizontal('center');
+        $sheet->getColumnDimension('A')->setAutoSize(true);
+        $sheet->getColumnDimension('B')->setAutoSize(true);
+        $sheet->getColumnDimension('C')->setAutoSize(true);
+        $sheet->getColumnDimension('D')->setAutoSize(true);
+        $sheet->getColumnDimension('E')->setAutoSize(true);
+        $sheet->getColumnDimension('F')->setAutoSize(true);
+
+        $sheet->setCellValue("A1", "No.");
+        $sheet->setCellValue("B1", "Nama");
+        $sheet->setCellValue("C1", "Pangkat");
+        $sheet->setCellValue("D1", "NRP");
+        $sheet->setCellValue("E1", "Jabatan");
+        $sheet->setCellValue("F1", "Kesatuan");
+
+        
+        foreach ($getsoal as $key) {
+            $sheet->getColumnDimension($columnsoal)->setAutoSize(true);
+            $sheet->setCellValue($columnsoal . "1", $key->no_soal);
+            $columnsoal++;
+        }
+        $sheetData = $spreadsheet->setActiveSheetIndex(0);
+        $column = 2;
+        $columnpil = 2;
+        $no = 1;
+        
+        foreach ($res as $val) {
+            $tanggal_lahir = new \DateTime($val->tanggal_lahir);
+            if ($val->gender_cd == "m") {
+                $sex = "PRIA";
+            } else {
+                $sex = "WANITA";
+            }
+            if ($tanggal_lahir > $sekarang) { 
+                $thn = "0";
+            }
+                $thn = date("Y",strtotime($val->tanggal_lahir));
+
+			$sheetData->setCellValue("A" . $column, $no);
+			$sheetData->setCellValue("B" . $column, $val->person_nm);
+			$sheetData->setCellValue("C" . $column, $val->pangkat);
+			$sheetData->setCellValue("D" . $column, $val->nrp);
+			$sheetData->setCellValue("E" . $column, $val->jabatan);
+			$sheetData->setCellValue("F" . $column, $val->satuan_nm);
+            $column++;
+            $res_respon = $this->soalmodel->getResponByUser($start_dttm,$end_dttm,$val->user_id,$group_id,$materi_id)->getResult();
+            // echo json_encode($res_respon);exit;
+            $columnpilihan = "G";
+            foreach ($res_respon as $keys) {
+                $sheetData->setCellValue($columnpilihan . $columnpil, $keys->jawaban_nm);
+                $columnpilihan++;
+            }
+            
+            $columnpil++;
+            $no++;
+		}
+
+		$writer = new Xlsx($spreadsheet);
+		$filepath = "filehasil/materi_k/".$fileName;
+        if (!file_exists("filehasil/materi_k/")) {
+            mkdir("filehasil/materi_k/", 0777, true);
+        }
+		$writer->save($filepath);
+ 
+		header("Content-Type: application/vnd.ms-excel");
+		header('Content-Disposition: attachment; filename="' . basename($filepath) . '"');
+		header('Expires: 0');
+		header('Cache-Control: must-revalidate');
+		header('Pragma: public');
+		header('Content-Length: ' . filesize($filepath));
+		flush();
+		readfile($filepath);
+		exit;
+    }
+
+    public function hasilAkhirExcelsrq29() {
+        if ($this->session->get("user_nm") == "") {
+			return redirect('/');
+		}
+        $sekarang = new \DateTime("today");
+        $start_dttm = $this->request->getUri()->getSegment(4);
+        $end_dttm = $this->request->getUri()->getSegment(5);
+        $group_id = $this->request->getUri()->getSegment(6);
+        $materi_id = $this->request->getUri()->getSegment(7);
+        $res = $this->soalmodel->getHasil($start_dttm, $end_dttm, $group_id)->getResult();
+        $resGroup = $this->soalmodel->getGroupByid($group_id)->getResult();
+        $groupName = !empty($resGroup) ? $resGroup[0]->group_nm : $group_id;
+        $fileName = $start_dttm."_laporan_hasil_akhir_".$groupName.".xlsx"; 
+		$spreadsheet = new Spreadsheet();
+		$sheet = $spreadsheet->setActiveSheetIndex(0);
+        $sheet->getStyle('A:J')->getAlignment()->setHorizontal('center');
+        foreach (range('A', 'J') as $col) {
+            $sheet->getColumnDimension($col)->setAutoSize(true);
+        }
+        $sheet->setCellValue("A1", "No.");
+        $sheet->setCellValue("B1", "Nama");
+        $sheet->setCellValue("C1", "Pangkat");
+        $sheet->setCellValue("D1", "NRP");
+        $sheet->setCellValue("E1", "Jabatan");
+        $sheet->setCellValue("F1", "Kesatuan");
+        $sheet->setCellValue("G1", "Depresi");
+        $sheet->setCellValue("H1", "NAPSA");
+        $sheet->setCellValue("I1", "Kholik");
+        $sheet->setCellValue("J1", "PTSD");
+
+        $sheetData = $spreadsheet->setActiveSheetIndex(0);
+        $column = 2;
+        $no = 1;
+        $processed_users = [];
+        
+        foreach ($res as $val) {
+            if (in_array($val->user_id, $processed_users)) {
+                continue;
+            }
+            $processed_users[] = $val->user_id;
+
+            $res_respon = $this->soalmodel->getResponByUser($start_dttm, $end_dttm, $val->user_id, $group_id, $materi_id)->getResult();
+            
+            $depresi = [];
+            $napsa = [];
+            $kholik = [];
+            $ptsd = [];
+
+            foreach ($res_respon as $keys) {
+                $pilihan = trim(strtoupper($keys->pilihan_nm ?? ''));
+                $jawaban = trim(strtoupper($keys->jawaban_nm ?? ''));
+
+                $isYa = false;
+                if ($pilihan === 'YA' || $pilihan === 'Y' || $jawaban === 'YA' || $jawaban === 'Y' || stripos($jawaban, 'YA') === 0 || stripos($pilihan, 'YA') === 0) {
+                    $isYa = true;
+                }
+
+                if ($isYa) {
+                    $no_soal = (int)$keys->no_soal;
+                    if ($no_soal >= 1 && $no_soal <= 20) {
+                        if (!in_array($no_soal, $depresi)) {
+                            $depresi[] = $no_soal;
+                        }
+                    } else if ($no_soal == 21) {
+                        if (!in_array($no_soal, $napsa)) {
+                            $napsa[] = $no_soal;
+                        }
+                    } else if ($no_soal >= 22 && $no_soal <= 24) {
+                        if (!in_array($no_soal, $kholik)) {
+                            $kholik[] = $no_soal;
+                        }
+                    } else if ($no_soal >= 25 && $no_soal <= 26) {
+                        if (!in_array($no_soal, $ptsd)) {
+                            $ptsd[] = $no_soal;
+                        }
+                    }
+                }
+            }
+
+            $kesatuan = $val->satker ?? $val->satuan_nm ?? '';
+
+            $sheetData->setCellValue("A" . $column, $no);
+            $sheetData->setCellValue("B" . $column, $val->person_nm ?? '');
+            $sheetData->setCellValue("C" . $column, $val->pangkat ?? '');
+            $sheetData->setCellValue("D" . $column, $val->nrp ?? '');
+            $sheetData->setCellValue("E" . $column, $val->jabatan ?? '');
+            $sheetData->setCellValue("F" . $column, $kesatuan);
+            $sheetData->setCellValue("G" . $column, !empty($depresi) ? implode(', ', $depresi) : '');
+            $sheetData->setCellValue("H" . $column, !empty($napsa) ? implode(', ', $napsa) : '');
+            $sheetData->setCellValue("I" . $column, !empty($kholik) ? implode(', ', $kholik) : '');
+            $sheetData->setCellValue("J" . $column, !empty($ptsd) ? implode(', ', $ptsd) : '');
+
+            $column++;
+            $no++;
+		}
+
+		$writer = new Xlsx($spreadsheet);
+		$filepath = "filehasil/materi_srq29/".$fileName;
+        if (!file_exists("filehasil/materi_srq29/")) {
+            mkdir("filehasil/materi_srq29/", 0777, true);
+        }
+		$writer->save($filepath);
+ 
+		header("Content-Type: application/vnd.ms-excel");
+		header('Content-Disposition: attachment; filename="' . basename($filepath) . '"');
+		header('Expires: 0');
+		header('Cache-Control: must-revalidate');
+		header('Pragma: public');
+		header('Content-Length: ' . filesize($filepath));
+		flush();
+		readfile($filepath);
+		exit;
+    }
 }

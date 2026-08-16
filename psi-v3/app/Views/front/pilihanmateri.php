@@ -228,6 +228,8 @@
                             window.location.href = "<?= base_url() ?>/pkp/petunjukpkp/"+materi_id+"/"+group_id+"/1";
                         } else if (group_id == 11) {
                             window.location.href = "<?= base_url() ?>/katosus/petunjukkatosus/"+materi_id+"/"+group_id;
+                        } else if (group_id == 12) {
+                            window.location.href = "<?= base_url() ?>/srq29/petunjuksrq29/"+materi_id+"/"+group_id;
                         }
                     } 
                     $("#loader-wrapper").addClass("d-none");

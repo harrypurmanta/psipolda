@@ -66,7 +66,12 @@
                   <tr>
                     <td class="text-center" width="30"><?= $no++; ?></td>
                     <td class="text-center"> <?= $km->group_nm ?> </td>
-                    <td class="text-center"><button onclick="unduhexcel(<?= $km->group_soal_id ?>, <?= $km->materi_id ?>)" class="btn btn-primary"><i class="fa fa-eye"></i></button></td>
+                    <td class="text-center">
+                      <button onclick="unduhexcel(<?= $km->group_soal_id ?>, <?= $km->materi_id ?>)" class="btn btn-primary"><i class="fa fa-eye"></i></button>
+                      <?php if($km->group_soal_id == 12) { ?>
+                        <button onclick="hasilAkhirExcelsrq29(<?= $km->group_soal_id ?>, <?= $km->materi_id ?>)" class="btn btn-warning"><i class="fa fa-eye"></i></button>
+                      <?php } ?>
+                    </td>
                   </tr>
                   <?php  } ?>
                   </tbody>
@@ -126,6 +131,13 @@
 <script src="<?= base_url() ?>/dist/dist/js/adminlte.min.js"></script>
 <!-- Page specific script -->
 <script>
+  function hasilAkhirExcelsrq29(group_id, materi_id) {
+    let start_dttm = $("#start_dttm").val();
+    let end_dttm = $("#end_dttm").val();
+    if (group_id == 12) {
+      window.location.href = "<?= base_url() ?>/admin/hasil/hasilAkhirExcelsrq29/"+start_dttm+"/"+end_dttm+"/"+group_id+"/"+materi_id
+    }
+  }
  function unduhexcel(group_id, materi_id) {
     let start_dttm = $("#start_dttm").val();
     let end_dttm = $("#end_dttm").val();
@@ -151,6 +163,8 @@
       window.location.href = "<?= base_url() ?>/admin/hasil/hasilexcelpkp/"+start_dttm+"/"+end_dttm+"/"+group_id+"/"+materi_id
     } else if (group_id == 11){
       window.location.href = "<?= base_url() ?>/admin/hasil/hasilexcelkatosus/"+start_dttm+"/"+end_dttm+"/"+group_id+"/"+materi_id
+    } else if (group_id == 12){
+      window.location.href = "<?= base_url() ?>/admin/hasil/hasilexcelsrq29/"+start_dttm+"/"+end_dttm+"/"+group_id+"/"+materi_id
     }
     
  }
