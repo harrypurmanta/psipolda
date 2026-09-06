@@ -1,6 +1,3 @@
-<?php
-$request = \Config\Services::request();
-?>
 <!DOCTYPE html>
 <html>
 <head>
@@ -26,10 +23,17 @@ $request = \Config\Services::request();
                 <section class="content">
                     <div class="row">
                         <div class="col-md-12" style="height: 400px;">
-                            <div class="bg-gray col-md-8 text-center" style="top: 50%;left: 50%;transform: translate(-50%, -50%);height: 350px;">
-                                <h3 style="padding-top:10px;"><b>PETUNJUK PENGERJAAN</b></h3>
-                                <p class="col-md-12" style="text-align: center; font-size: 18px;">Pilihlah pernyataan yang paling tepat menurut Anda</p>
-                                <a href='<?= base_url() ?>/srq29/ujian/<?= $request->uri->getSegment(3) ?>/<?= $request->uri->getSegment(4) ?>' class='btn btn-success' style='font-size:18px;'>Mulai</a>
+                            <div class="bg-gray col-md-8 text-center" style="top: 50%;left: 50%;transform: translate(-50%, -50%);height: 300px;">
+                                <h3 style="padding-top:10px;"><b>Petunjuk Pengerjaan Soal</b></h3>
+                                <h3><b><?= $group[0]->group_nm ?></b></h3>
+                                <p>Saat anda klik tombol <b><i>Mulai</i></b>, Maka akan langsung masuk ke Pengerjaan soal Selamat Mengerjakan</p>
+                                <?php
+                                    if ($group[0]->group_soal_id == 4) {
+                                        echo "<a href='".base_url()."/pembahasan/sikapkerja/".$materi_id."/".$group[0]->group_soal_id."' class='btn btn-success' style='font-size:18px;'>Mulai</a>";
+                                    } else {
+                                        echo "<a href='".base_url()."/pembahasan/ujian/".$materi_id."/".$group[0]->group_soal_id."' class='btn btn-success' style='font-size:18px;'>Mulai</a>";
+                                    }
+                                ?>
                             </div>
                         </div>
                     </div>
@@ -43,5 +47,7 @@ $request = \Config\Services::request();
     <script src="<?= base_url() ?>/bower_components/jquery-slimscroll/jquery.slimscroll.min.js"></script>
     <script src="<?= base_url() ?>/bower_components/fastclick/lib/fastclick.js"></script>
     <script src="<?= base_url() ?>/dist/js/adminlte.min.js"></script>
+    <script src="<?= base_url() ?>/dist/js/demo.js"></script>
 </body>
+
 </html>

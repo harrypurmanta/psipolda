@@ -230,6 +230,8 @@
                             window.location.href = "<?= base_url() ?>/katosus/petunjukkatosus/"+materi_id+"/"+group_id;
                         } else if (group_id == 12) {
                             window.location.href = "<?= base_url() ?>/srq29/petunjuksrq29/"+materi_id+"/"+group_id;
+                        } else if (group_id == 13) {
+                            window.location.href = "<?= base_url() ?>/sikapkerja/index/"+materi_id+"/"+group_id;
                         }
                     } 
                     $("#loader-wrapper").addClass("d-none");

@@ -1,126 +1,118 @@
 <?php 
   $this->session = \Config\Services::session();
 ?>
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Admin | Soal</title>
-
-  <!-- Google Font: Source Sans Pro -->
   <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,400i,700&display=fallback">
-  <!-- Font Awesome -->
   <link rel="stylesheet" href="<?= base_url() ?>/plugins/fontawesome-free/css/all.min.css">
-  <!-- DataTables -->
   <link rel="stylesheet" href="<?= base_url() ?>/plugins/datatables-bs4/css/dataTables.bootstrap4.min.css">
   <link rel="stylesheet" href="<?= base_url() ?>/plugins/datatables-responsive/css/responsive.bootstrap4.min.css">
   <link rel="stylesheet" href="<?= base_url() ?>/plugins/datatables-buttons/css/buttons.bootstrap4.min.css">
-  <!-- Theme style -->
   <link rel="stylesheet" href="<?= base_url() ?>/dist/dist/css/adminlte.min.css">
   <style>
     #loader-wrapper {
-	display: flex;
-	position: fixed;
-	z-index: 1060;
-	top: 0;
-	right: 0;
-	bottom: 0;
-	left: 0;
-	flex-direction: row;
-	align-items: center;
-	justify-content: center;
-	padding: 0.625em;
-	overflow-x: hidden;
-	transition: background-color 0.1s;
-	background-color: rgb(253 253 253 / 58%);
-	-webkit-overflow-scrolling: touch;
-}
+      display: flex;
+      position: fixed;
+      z-index: 1060;
+      top: 0;
+      right: 0;
+      bottom: 0;
+      left: 0;
+      flex-direction: row;
+      align-items: center;
+      justify-content: center;
+      padding: 0.625em;
+      overflow-x: hidden;
+      transition: background-color 0.1s;
+      background-color: rgb(253 253 253 / 58%);
+      -webkit-overflow-scrolling: touch;
+    }
 
-.loader {
-	border: 10px solid #f3f3f3;
-	border-radius: 50%;
-	border-top: 10px solid #3af3f5;
-	border-bottom: 10px solid #3abcec;
-	width: 50px;
-	height: 50px;
-	-webkit-animation: spin 2s linear infinite;
-	animation: spin 2s linear infinite;
-	margin: 1.75rem auto;
-}
+    .loader {
+      border: 10px solid #f3f3f3;
+      border-radius: 50%;
+      border-top: 10px solid #3af3f5;
+      border-bottom: 10px solid #3abcec;
+      width: 50px;
+      height: 50px;
+      -webkit-animation: spin 2s linear infinite;
+      animation: spin 2s linear infinite;
+      margin: 1.75rem auto;
+    }
 
-	
+      
 
-		@keyframes fadeIn {
-		  0% {
-		    opacity: 0;
-		  }
-		  100% {
-		    opacity: 1;
-		  }
-		}
+        @keyframes fadeIn {
+          0% {
+            opacity: 0;
+          }
+          100% {
+            opacity: 1;
+          }
+        }
 
-		@-moz-keyframes fadeIn {
-		  0% {
-		    opacity: 0;
-		  }
-		  100% {
-		    opacity: 1;
-		  }
-		}
+        @-moz-keyframes fadeIn {
+          0% {
+            opacity: 0;
+          }
+          100% {
+            opacity: 1;
+          }
+        }
 
-		@-webkit-keyframes fadeIn {
-		  0% {
-		    opacity: 0;
-		  }
-		  100% {
-		    opacity: 1;
-		  }
-		}
+        @-webkit-keyframes fadeIn {
+          0% {
+            opacity: 0;
+          }
+          100% {
+            opacity: 1;
+          }
+        }
 
-		@-o-keyframes fadeIn {
-		  0% {
-		    opacity: 0;
-		  }
-		  100% {
-		    opacity: 1;
-		  }
-		}
+        @-o-keyframes fadeIn {
+          0% {
+            opacity: 0;
+          }
+          100% {
+            opacity: 1;
+          }
+        }
 
-		@-ms-keyframes fadeIn {
-		  0% {
-		    opacity: 0;
-		  }
-		  100% {
-		    opacity: 1;
-		  }
-		}
+        @-ms-keyframes fadeIn {
+          0% {
+            opacity: 0;
+          }
+          100% {
+            opacity: 1;
+          }
+        }
 
-		@-webkit-keyframes spin {
-		  0% {
-		    -webkit-transform: rotate(0deg);
-		  }
-		  100% {
-		    -webkit-transform: rotate(360deg);
-		  }
-		}
+        @-webkit-keyframes spin {
+          0% {
+            -webkit-transform: rotate(0deg);
+          }
+          100% {
+            -webkit-transform: rotate(360deg);
+          }
+        }
 
-		@keyframes spin {
-		  0% {
-		    transform: rotate(0deg);
-		  }
-		  100% {
-		    transform: rotate(360deg);
-		  }
-		}
+        @keyframes spin {
+          0% {
+            transform: rotate(0deg);
+          }
+          100% {
+            transform: rotate(360deg);
+          }
+        }
   </style>
 </head>
 <body class="hold-transition layout-top-nav">
 <div class="wrapper">
  <!-- Navbar -->
- 
-
  <?= $this->include('admin/navbar') ?>
   <!-- /.navbar -->
 <!-- Content Wrapper. Contains page content -->
@@ -149,52 +141,190 @@
           <div class="col-12">
             <div class="card">
               <div class="card-header">
+                <div class="col-md-6">
+                  <form class="form-horizontal">
+                    <div class="card-body">
+                      <div class="form-group row">
+                        <label for="group_id" class="col-sm-3 col-form-label">Group Soal</label>
+                        <div class="col-sm-9">
+                          <select name="group_id" id="group_id" class="form-control">
+                              <option value="" disabled <?= ($this->session->group_id == null ? "" : "selected") ?>>Pilih Materi Soal</option>
+                              <?php
+                                  foreach ($group as $key) {
+                              ?>
+                              <option value="<?= $key->group_soal_id ?>">
+                                  <?= $key->group_nm ?>
+                              </option>
+                              <?php } ?>
+                          </select>
+                        </div>
+                      </div>
+                      <div class="form-group row">
+                        <label for="materi_id" class="col-sm-3 col-form-label">Materi Soal</label>
+                        <div class="col-sm-9">
+                          <select name="materi_id" id="materi_id" class="form-control">
+                              <option value="" disabled <?= ($this->session->materi_id == null ? "" : "selected") ?>>Pilih Materi Soal</option>
+                              <?php
+                                  foreach ($materi as $key) {
+                              ?>
+                              <option value="<?= $key->materi_id ?>">
+                                  <?= $key->materi_nm ?>
+                              </option>
+                              <?php } ?>
+                          </select>
+                        </div>
+                      </div>
+                      <div class="form-group row">
+                        <div class="offset-sm-2 col-sm-10 d-flex justify-content-end">
+                          <div class="form-check">
+                            <button type="button" class="btn btn-sm btn-primary" onclick="tampilkansoal()">Tampilkan</button>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </form>
+                </div>
               <div class="col-lg-12">
-                <div class="col-lg-1" style="display:inline-block;text-align:left;width:100%;">
-                  <button style="margin-bottom:10px;" onclick="tambahsoal()" class="btn btn-primary" data-toggle="modal" data-target="#modal-lg">Tambah</button>
-                  <button onclick="tambahsoallatihan()" class="btn btn-primary" data-toggle="modal" data-target="#modal-lg">Tambah SK</button>
-                </div>
-                <div class="col-lg-4" style="display:inline-block;text-align:center;width:100%;">
-                  <?php
-                    foreach ($materi as $mtr) {
-                  ?>
-                  <label> <input <?= ($mtr->materi_id == $this->session->materi_filter?"checked":"") ?> onclick="showsoal('filter')" type="radio" value="<?= $mtr->materi_id ?>" id="materi_id" name="materi_filter" style="margin-left:10px;"/> <?= $mtr->materi_nm ?> </label>
-                  <?php
-                    }
-                  ?>
-                </div>
-                <div class="col-lg-5" style="display:inline-block;text-align:center;width:100%;">
-                  <?php
-                    foreach ($group as $grp) {
-                    
-                  ?>
-                  <label> <input <?= ($grp->group_soal_id == $this->session->group_filter?"checked":"") ?> onclick="showsoal('filter')" type="radio" value="<?= $grp->group_soal_id ?>" id="group_id" name="group_filter" style="margin-left:10px;"/> <?= $grp->group_nm ?> </label>
-                  <?php
-                    }
-                  ?>
-                </div>
+                <a href="<?= base_url() ?>/admin/soal/viewTambahsoal" class="btn btn-primary">Tambah Soal</a>
+                <button onclick="tambahsoallatihan()" class="btn btn-primary" data-toggle="modal" data-target="#modal-tambah-sk">Tambah SK</button>
+                
                 <div class="col-lg-1" style="display:inline-block;text-align:right;width:100%;">
                   <button onclick="showsoal('all')" class="btn btn-secondary">Soal SK</button>
                 </div>
               </div>
               </div>
               <!-- /.card-header -->
-              <div class="card-body" id="dv_cardbody">
-                    <?= $soal; ?>
-              </div>
-              <!-- /.card-body -->
-            </div>
-            <!-- /.card -->
+              <div class="card-body">
+                  <table id="tbl_soal" class="table table-bordered table-hover">
+                    <thead>
+                      <tr>
+                        <th width="10" style="text-align: center;">No.</th>
+                        <th width="100" style="text-align: center;">No. Soal</th>
+                        <th style="text-align: center;">Soal</th>
+                        <th style="text-align: center;">Kunci</th>
+                        <th style="text-align: center;" width="100">Aksi</th>
+                      </tr>
+                    </thead>
+                    <tbody>
 
-        
+                    </tbody>
+                  </table>
+              </div>
+            </div>
           </div>
-          <!-- /.col -->
         </div>
-        <!-- /.row -->
       </div>
-      <!-- /.container-fluid -->
     </section>
     <!-- /.content -->
+
+    <!-- Modal Tambah SK -->
+    <div class="modal fade" id="modal-tambah-sk">
+      <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title font-weight-bold">Tambah Soal Sikap Kerja (SK)</h5>
+            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+              <span aria-hidden="true">&times;</span>
+            </button>
+          </div>
+          <div class="modal-body">
+            <form id="form_tambah_sk">
+              <div class="form-group row">
+                <label for="sk_group_id" class="col-sm-3 col-form-label font-weight-bold">Group Soal <span class="text-danger">*</span></label>
+                <div class="col-sm-9">
+                  <select name="group_id" id="sk_group_id" class="form-control">
+                    <option value="" disabled selected>Pilih Group Soal</option>
+                    <?php if (!empty($group)) : ?>
+                      <?php foreach ($group as $key) : ?>
+                        <option value="<?= $key->group_soal_id ?>"><?= $key->group_nm ?></option>
+                      <?php endforeach; ?>
+                    <?php endif; ?>
+                  </select>
+                </div>
+              </div>
+
+              <div class="form-group row">
+                <label for="sk_materi_id" class="col-sm-3 col-form-label font-weight-bold">Materi Soal <span class="text-danger">*</span></label>
+                <div class="col-sm-9">
+                  <select name="materi_id" id="sk_materi_id" class="form-control">
+                    <option value="" disabled selected>Pilih Materi Soal</option>
+                    <?php if (!empty($materi)) : ?>
+                      <?php foreach ($materi as $key) : ?>
+                        <option value="<?= $key->materi_id ?>"><?= $key->materi_nm ?></option>
+                      <?php endforeach; ?>
+                    <?php endif; ?>
+                  </select>
+                </div>
+              </div>
+
+              <hr>
+
+              <div class="form-group">
+                <label class="font-weight-bold mb-2">Karakter Kolom (5 Karakter unik per Kolom):</label>
+                <div class="row">
+                  <div class="col-md-4 col-12 mb-3">
+                    <label for="kolom1" class="col-form-label font-weight-bold">Kolom 1</label>
+                    <input onkeyup="checkdupe('kolom1')" oninput="this.value = this.value.toUpperCase()" maxlength="5" type="text" class="form-control" id="kolom1" name="kolom1" placeholder="ABCDE">
+                  </div>
+                  <div class="col-md-4 col-12 mb-3">
+                    <label for="kolom2" class="col-form-label font-weight-bold">Kolom 2</label>
+                    <input onkeyup="checkdupe('kolom2')" oninput="this.value = this.value.toUpperCase()" maxlength="5" type="text" class="form-control" id="kolom2" name="kolom2" placeholder="ABCDE">
+                  </div>
+                  <div class="col-md-4 col-12 mb-3">
+                    <label for="kolom3" class="col-form-label font-weight-bold">Kolom 3</label>
+                    <input onkeyup="checkdupe('kolom3')" oninput="this.value = this.value.toUpperCase()" maxlength="5" type="text" class="form-control" id="kolom3" name="kolom3" placeholder="ABCDE">
+                  </div>
+                </div>
+
+                <div class="row">
+                  <div class="col-md-4 col-12 mb-3">
+                    <label for="kolom4" class="col-form-label font-weight-bold">Kolom 4</label>
+                    <input onkeyup="checkdupe('kolom4')" oninput="this.value = this.value.toUpperCase()" maxlength="5" type="text" class="form-control" id="kolom4" name="kolom4" placeholder="ABCDE">
+                  </div>
+                  <div class="col-md-4 col-12 mb-3">
+                    <label for="kolom5" class="col-form-label font-weight-bold">Kolom 5</label>
+                    <input onkeyup="checkdupe('kolom5')" oninput="this.value = this.value.toUpperCase()" maxlength="5" type="text" class="form-control" id="kolom5" name="kolom5" placeholder="ABCDE">
+                  </div>
+                  <div class="col-md-4 col-12 mb-3">
+                    <label for="kolom6" class="col-form-label font-weight-bold">Kolom 6</label>
+                    <input onkeyup="checkdupe('kolom6')" oninput="this.value = this.value.toUpperCase()" maxlength="5" type="text" class="form-control" id="kolom6" name="kolom6" placeholder="ABCDE">
+                  </div>
+                </div>
+
+                <div class="row">
+                  <div class="col-md-4 col-12 mb-3">
+                    <label for="kolom7" class="col-form-label font-weight-bold">Kolom 7</label>
+                    <input onkeyup="checkdupe('kolom7')" oninput="this.value = this.value.toUpperCase()" maxlength="5" type="text" class="form-control" id="kolom7" name="kolom7" placeholder="ABCDE">
+                  </div>
+                  <div class="col-md-4 col-12 mb-3">
+                    <label for="kolom8" class="col-form-label font-weight-bold">Kolom 8</label>
+                    <input onkeyup="checkdupe('kolom8')" oninput="this.value = this.value.toUpperCase()" maxlength="5" type="text" class="form-control" id="kolom8" name="kolom8" placeholder="ABCDE">
+                  </div>
+                  <div class="col-md-4 col-12 mb-3">
+                    <label for="kolom9" class="col-form-label font-weight-bold">Kolom 9</label>
+                    <input onkeyup="checkdupe('kolom9')" oninput="this.value = this.value.toUpperCase()" maxlength="5" type="text" class="form-control" id="kolom9" name="kolom9" placeholder="ABCDE">
+                  </div>
+                </div>
+
+                <div class="row">
+                  <div class="col-md-4 col-12 mb-3">
+                    <label for="kolom10" class="col-form-label font-weight-bold">Kolom 10</label>
+                    <input onkeyup="checkdupe('kolom10')" oninput="this.value = this.value.toUpperCase()" maxlength="5" type="text" class="form-control" id="kolom10" name="kolom10" placeholder="ABCDE">
+                  </div>
+                </div>
+              </div>
+            </form>
+          </div>
+          <div class="modal-footer justify-content-between">
+            <button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
+            <button onclick="simpansoallatihan()" type="button" class="btn btn-info">Simpan</button>
+          </div>
+        </div>
+        <!-- /.modal-content -->
+      </div>
+      <!-- /.modal-dialog -->
+    </div>
+
     <div class="modal fade" id="modal-lg">
       <div class="modal-dialog modal-lg">
         <div class="modal-content">
@@ -217,12 +347,9 @@
         <div class="loader"></div>
       </div>
   </div>
-  
- 
 
 </div>
 <!-- ./wrapper -->
-
 
 <!-- jQuery -->
 <script src="<?= base_url() ?>/plugins/jquery/jquery.min.js"></script>
@@ -332,137 +459,135 @@
   }
 
   function tambahsoallatihan() {
-    $.ajax({
-        url: "<?= base_url('soal/tambahsoallatihan') ?>",
-        success: function(data) {
-          $('#modal_body').html(data);
-
-        },
-        error: function() {
-          alert("error");
-        }
-      });
+    if (document.getElementById('form_tambah_sk')) {
+      document.getElementById('form_tambah_sk').reset();
+    }
   }
 
   function simpansoallatihan() {
-    var kolom1 = $("#kolom1").val();
-    var kolom2 = $("#kolom2").val();
-    var kolom3 = $("#kolom3").val();
-    var kolom4 = $("#kolom4").val();
-    var kolom5 = $("#kolom5").val();
-    var kolom6 = $("#kolom6").val();
-    var kolom7 = $("#kolom7").val();
-    var kolom8 = $("#kolom8").val();
-    var kolom9 = $("#kolom9").val();
-    var kolom10 = $("#kolom10").val();
-    var materi = document.getElementsByName("materix");
-    var checkBox = ""
-        for (var i = 0, length = materi.length; i < length; i++) {
-            if (materi[i].checked) {
-                checkBox = "checked";
-                break;
-            }
-        }
+    var kolom1 = $("#kolom1").val() || "";
+    var kolom2 = $("#kolom2").val() || "";
+    var kolom3 = $("#kolom3").val() || "";
+    var kolom4 = $("#kolom4").val() || "";
+    var kolom5 = $("#kolom5").val() || "";
+    var kolom6 = $("#kolom6").val() || "";
+    var kolom7 = $("#kolom7").val() || "";
+    var kolom8 = $("#kolom8").val() || "";
+    var kolom9 = $("#kolom9").val() || "";
+    var kolom10 = $("#kolom10").val() || "";
+
+    var group_id = $("#sk_group_id").val();
+    if (!group_id) {
+      alert("Pilih group soal dahulu");
+      document.getElementById("sk_group_id").focus();
+      return;
+    }
+
+    var materi_id = $("#sk_materi_id").val();
+    if (!materi_id) {
+      alert("Pilih materi dahulu");
+      document.getElementById("sk_materi_id").focus();
+      return;
+    }
+
+    if (kolom1.length < 5) {
+      alert("Jumlah karakter pada KOLOM 1 kurang dari 5");
+      document.getElementById("kolom1").focus();
+      return;
+    } 
     
-    if (checkBox == "checked") {
-      var materi_id = $("input[name='materix']:checked").val();
-      // alert(materi_id);
+    if (kolom2.length < 5) {
+      alert("Jumlah karakter pada KOLOM 2 kurang dari 5");
+      document.getElementById("kolom2").focus();
+      return;
+    }
 
-      if (kolom1.length < 5 && kolom1.length > 0) {
-        alert("Jumlah karakter pada KOLOM 1 kurang dari 5");
-        document.getElementById("kolom1").focus();
-        return;
-      } 
-      
-      if (kolom2.length < 5 && kolom2.length > 0) {
-        alert("Jumlah karakter pada KOLOM 2 kurang dari 5");
-        document.getElementById("kolom2").focus();
-        return;
-      }
+    if (kolom3.length < 5) {
+      alert("Jumlah karakter pada KOLOM 3 kurang dari 5");
+      document.getElementById("kolom3").focus();
+      return;
+    }
 
-      if (kolom3.length < 5 && kolom3.length > 0) {
-        alert("Jumlah karakter pada KOLOM 3 kurang dari 5");
-        document.getElementById("kolom3").focus();
-        return;
-      }
+    if (kolom4.length < 5) {
+      alert("Jumlah karakter pada KOLOM 4 kurang dari 5");
+      document.getElementById("kolom4").focus();
+      return;
+    }
 
-      if (kolom4.length < 5 && kolom4.length > 0) {
-        alert("Jumlah karakter pada KOLOM 4 kurang dari 5");
-        document.getElementById("kolom4").focus();
-        return;
-      }
+    if (kolom5.length < 5) {
+      alert("Jumlah karakter pada KOLOM 5 kurang dari 5");
+      document.getElementById("kolom5").focus();
+      return;
+    }
 
-      if (kolom5.length < 5 && kolom5.length > 0) {
-        alert("Jumlah karakter pada KOLOM 5 kurang dari 5");
-        document.getElementById("kolom5").focus();
-        return;
-      }
+    if (kolom6.length < 5) {
+      alert("Jumlah karakter pada KOLOM 6 kurang dari 5");
+      document.getElementById("kolom6").focus();
+      return;
+    }
 
-      if (kolom6.length < 5 && kolom6.length > 0) {
-        alert("Jumlah karakter pada KOLOM 6 kurang dari 5");
-        kdocument.getElementById("kolom6").focus();
-        return;
-      }
+    if (kolom7.length < 5) {
+      alert("Jumlah karakter pada KOLOM 7 kurang dari 5");
+      document.getElementById("kolom7").focus();
+      return;
+    }
 
-      if (kolom7.length < 5 && kolom7.length > 0) {
-        alert("Jumlah karakter pada KOLOM 7 kurang dari 5");
-        document.getElementById("kolom7").focus();
-        return;
-      }
+    if (kolom8.length < 5) {
+      alert("Jumlah karakter pada KOLOM 8 kurang dari 5");
+      document.getElementById("kolom8").focus();
+      return;
+    }
 
-      if (kolom8.length < 5 && kolom8.length > 0) {
-        alert("Jumlah karakter pada KOLOM 8 kurang dari 5");
-        document.getElementById("kolom8").focus();
-        return;
-      }
+    if (kolom9.length < 5) {
+      alert("Jumlah karakter pada KOLOM 9 kurang dari 5");
+      document.getElementById("kolom9").focus();
+      return;
+    }
 
-      if (kolom9.length < 5 && kolom9.length > 0) {
-        alert("Jumlah karakter pada KOLOM 9 kurang dari 5");
-        document.getElementById("kolom9").focus();
-        return;
-      }
+    if (kolom10.length < 5) {
+      alert("Jumlah karakter pada KOLOM 10 kurang dari 5");
+      document.getElementById("kolom10").focus();
+      return;
+    }  
 
-      if (kolom10.length < 5 && kolom10.length > 0) {
-        alert("Jumlah karakter pada KOLOM 10 kurang dari 5");
-        document.getElementById("kolom10").focus();
-        return;
-      }  
-
-        $.ajax({
-        url: "<?= base_url('soal/simpansoallatihan') ?>",
-        type: "post",
-        dataType: "json",
-        data: {
-          "kolom1" : kolom1,
-          "kolom2" : kolom2,
-          "kolom3" : kolom3,
-          "kolom4" : kolom4,
-          "kolom5" : kolom5,
-          "kolom6" : kolom6,
-          "kolom7" : kolom7,
-          "kolom8" : kolom8,
-          "kolom9" : kolom9,
-          "kolom10" : kolom10,
-          "materi_id" : materi_id
-        },
-        beforeSend: function() {
-          $("#loader-wrapper").removeClass("d-none")
-        },
-        success: function(data) {
-          $("#loader-wrapper").addClass("d-none");
+    $.ajax({
+      url: "<?= base_url('soal/simpansoallatihan') ?>",
+      type: "post",
+      dataType: "json",
+      data: {
+        "kolom1" : kolom1,
+        "kolom2" : kolom2,
+        "kolom3" : kolom3,
+        "kolom4" : kolom4,
+        "kolom5" : kolom5,
+        "kolom6" : kolom6,
+        "kolom7" : kolom7,
+        "kolom8" : kolom8,
+        "kolom9" : kolom9,
+        "kolom10" : kolom10,
+        "group_id" : group_id,
+        "materi_id" : materi_id
+      },
+      beforeSend: function() {
+        $("#loader-wrapper").removeClass("d-none");
+      },
+      success: function(data) {
+        $("#loader-wrapper").addClass("d-none");
+        
+        if (data == "sukses") {
+          $('#modal-tambah-sk').modal("hide");
           $('#modal-lg').modal("hide");
           alert("Sukses");
-          
-        },
-        error: function() {
-          $("#loader-wrapper").addClass("d-none");
-          alert("error");
+        } else {
+          alert("Gagal");
         }
-      });
-    } else {
-      alert("pilih materi dahulu");
-    }
-}
+      },
+      error: function() {
+        $("#loader-wrapper").addClass("d-none");
+        alert("error");
+      }
+    });
+  }
 
   function tambahsoal() {
     $.ajax({
@@ -527,7 +652,6 @@
       });
   }
   
-
   function updatesoal(soal_id) {
     var formdata = new FormData();
     var soal_nm = $("#soal_nm").val();
@@ -564,49 +688,49 @@
         alert("error");
       }
     });
-}
-
-function hapussoal(soal_id) {
-
-    $.ajax({
-      url: "<?= base_url('soal/hapussoal') ?>",
-      type: "post",
-      dataType: "json",
-      data: {
-        "soal_id": soal_id
-      },
-      success: function(data) {
-        $('#modal-lg').modal("hide");
-          alert("Sukses");
-        $("#example2").load(window.location.href+" #example2");
-      },
-      error: function() {
-        alert("error");
-      }
-    });
-}
-
-function showjawaban(soal_id) {
-  var td_form = document.querySelectorAll(".td_form");
-  if (td_form.length !== 0) {
-      for (let i = 0; i < td_form.length; i++) {
-        td_form[i].remove();
-      }
   }
+
+  function hapussoal(soal_id) {
+
       $.ajax({
-        url: "<?= base_url('soal/showjawaban') ?>",
+        url: "<?= base_url('soal/hapussoal') ?>",
         type: "post",
         dataType: "json",
         data: {
           "soal_id": soal_id
         },
         success: function(data) {
-          $('#tr_data_'+soal_id).html(data);
+          $('#modal-lg').modal("hide");
+            alert("Sukses");
+          $("#example2").load(window.location.href+" #example2");
         },
         error: function() {
           alert("error");
         }
       });
+  }
+
+  function showjawaban(soal_id) {
+    var td_form = document.querySelectorAll(".td_form");
+    if (td_form.length !== 0) {
+        for (let i = 0; i < td_form.length; i++) {
+          td_form[i].remove();
+        }
+    }
+        $.ajax({
+          url: "<?= base_url('soal/showjawaban') ?>",
+          type: "post",
+          dataType: "json",
+          data: {
+            "soal_id": soal_id
+          },
+          success: function(data) {
+            $('#tr_data_'+soal_id).html(data);
+          },
+          error: function() {
+            alert("error");
+          }
+        });
   }
 
 

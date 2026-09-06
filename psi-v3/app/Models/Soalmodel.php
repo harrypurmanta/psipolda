@@ -404,34 +404,18 @@ public function getAllSoalSK() {
                         ->get();
     }
 
-    public function getResponSikapKerja($user_id,$session,$kolom_id,$materi) {
-        if ($session == "") {
-            return $this->db->table('respon a')
+    public function getResponSikapKerja($soal_id, $group_id, $materi, $user_id) {
+        return $this->db->table('respon a')
                         ->select('*,a.pilihan_nm as pilihan_respon,a.kolom_id as kolom_respon,a.soal_id as soal_id_respon,b.soal_id as soal_id_jwb')
                         ->join('jawaban b','b.jawaban_id=a.jawaban_id','left')
                         ->join('soal c','c.soal_id=b.soal_id','left')
                         ->where('a.status_cd','normal')
                         ->where('b.status_cd','normal')
                         ->where('a.created_user_id',$user_id)
-                        // ->where('a.session',$session)
+                        ->where('c.soal_id',$soal_id)
                         ->where('a.materi',$materi)
-                        ->where('a.kolom_id',$kolom_id)
-                        ->where('a.group_id',4)
+                        ->where('a.group_id', $group_id)
                         ->get();
-        } else {
-            return $this->db->table('respon a')
-                        ->select('*,a.pilihan_nm as pilihan_respon,a.kolom_id as kolom_respon,a.soal_id as soal_id_respon,b.soal_id as soal_id_jwb')
-                        ->join('jawaban b','b.jawaban_id=a.jawaban_id','left')
-                        ->join('soal c','c.soal_id=b.soal_id','left')
-                        ->where('a.status_cd','normal')
-                        ->where('b.status_cd','normal')
-                        ->where('a.created_user_id',$user_id)
-                        ->where('a.session',$session)
-                        ->where('a.materi',$materi)
-                        ->where('a.kolom_id',$kolom_id)
-                        ->where('a.group_id',4)
-                        ->get();
-        }
     }
 
     public function getResponByJawabanId($jawaban_id,$group_id,$materi,$user_id,$session) {
@@ -1072,6 +1056,16 @@ public function getAllSoalSK() {
                         ->get();
     }
 
+    public function updateResponSikapKerja($soal_id,$jawaban_id,$group_id,$materi,$user_id,$data) {
+        return $this->db->table('respon')
+                        ->set($data)
+                        ->where('soal_id',$soal_id)
+                        ->where('group_id',$group_id)
+                        ->where('materi',$materi)
+                        ->where('created_user_id',$user_id)
+                        ->update();
+    }
+
     public function updateResponTiu5($soal_id,$jawaban_id,$group_id,$materi,$user_id,$data) {
         return $this->db->table('respon')
                         ->set($data)
@@ -1083,6 +1077,18 @@ public function getAllSoalSK() {
     }
 
     public function getSoalTiu5($no_soal,$group_id,$materi,$kolom_id) {
+        return $this->db->table('soal a')
+                        ->select('*')
+                        ->join('group_soal b','b.group_soal_id=a.group_id','left')
+                        ->where('a.no_soal',$no_soal)
+                        ->where('a.group_id',$group_id)
+                        ->where('a.materi',$materi)
+                        ->where('a.kolom_id',$kolom_id)
+                        ->where('a.status_cd','normal')
+                        ->get();
+    }
+
+    public function getSoalSikapKerja($no_soal,$group_id,$materi,$kolom_id) {
         return $this->db->table('soal a')
                         ->select('*')
                         ->join('group_soal b','b.group_soal_id=a.group_id','left')

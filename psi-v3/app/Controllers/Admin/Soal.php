@@ -465,95 +465,9 @@ class Soal extends BaseController
         }
     }
 
-    public function tambahsoallatihan() {
-        $materi_id = "";
-        $ret = "<div class='card'>
-                <div class='card-body'>
-                <div class='row'>
-                <div class='col-sm-12'>
-                <div class='form-group'>
-                    <div class='card-body'>
-                    <div style='margin-bottom:20px;' class='col-lg-12'><label for='no_soal'>Materi : </label>";
-
-                    $allmateri = $this->soalmodel->getAllJMateri()->getResult();
-                        foreach ($allmateri as $mat) {
-                            $materi_id = $mat->materi_id;
-                            $ret .= "<label style='margin:0px 10px;' for='materix_${materi_id}'><input value='".$mat->materi_id."' type='radio' id='materix_${materi_id}' name='materix' ".($materi_id==$this->session->materi?'checked':'')."/> ".$mat->materi_nm."</label>";
-                        }
-                    $ret .= "</div>
-                    <div class='form-group row'>
-                        <label for='kolom1' class='col-form-label'>Kolom 1 </label>
-                        <div class='col-2' style=\"margin-left:5px;margin-right:10px;\">
-                        <input onkeyup='checkdupe(\"kolom1\")' oninput='this.value = this.value.toUpperCase()' maxlength='5' type='text' class='form-control' id='kolom1' name='kolom1'>
-                        </div>
-
-                        <label for='kolom2' class='col-form-label'>Kolom 2</label>
-                        <div class='col-2' style=\"margin-left:5px;margin-right:10px;\">
-                        <input onkeyup='checkdupe(\"kolom2\")' oninput='this.value = this.value.toUpperCase()' maxlength='5' type='text' class='form-control' id='kolom2' name='kolom2'>
-                        </div>
-
-                        <label for='kolom3' class='col-form-label'>Kolom 3</label>
-                        <div class='col-2' style=\"margin-left:5px;\">
-                        <input onkeyup='checkdupe(\"kolom3\")' oninput='this.value = this.value.toUpperCase()' maxlength='5' type='text' class='form-control' id='kolom3' name='kolom3'>
-                        </div>
-                    </div>
-
-                    <div class='form-group row'>
-                        <label for='kolom4' class='col-form-label'>Kolom 4</label>
-                        <div class='col-2' style=\"margin-left:5px;margin-right:10px;\">
-                        <input onkeyup='checkdupe(\"kolom4\")' oninput='this.value = this.value.toUpperCase()' maxlength='5' type='text' class='form-control' id='kolom4' name='kolom4'>
-                        </div>
-
-                        <label for='kolom5' class='col-form-label'>Kolom 5</label>
-                        <div class='col-2' style=\"margin-left:5px;margin-right:10px;\">
-                        <input onkeyup='checkdupe(\"kolom5\")' oninput='this.value = this.value.toUpperCase()' maxlength='5' type='text' class='form-control' id='kolom5' name='kolom5'>
-                        </div>
-
-                        <label for='kolom6' class='col-form-label'>Kolom 6</label>
-                        <div class='col-2' style=\"margin-left:5px;margin-right:10px;\">
-                        <input onkeyup='checkdupe(\"kolom6\")' oninput='this.value = this.value.toUpperCase()' maxlength='5' type='text' class='form-control' id='kolom6' name='kolom6'>
-                        </div>
-                    </div>
-                    <div class='form-group row'>
-                        <label for='kolom7' class='col-form-label'>Kolom 7</label>
-                        <div class='col-2' style=\"margin-left:5px;margin-right:10px;\">
-                        <input onkeyup='checkdupe(\"kolom7\")' oninput='this.value = this.value.toUpperCase()' maxlength='5' type='text' class='form-control' id='kolom7' name='kolom7'>
-                        </div>
-
-                        <label for='kolom8' class='col-form-label'>Kolom 8</label>
-                        <div class='col-2' style=\"margin-left:5px;margin-right:10px;\">
-                        <input onkeyup='checkdupe(\"kolom8\")' oninput='this.value = this.value.toUpperCase()' maxlength='5' type='text' class='form-control' id='kolom8' name='kolom8'>
-                        </div>
-
-                        <label for='kolom9' class='col-form-label'>Kolom 9</label>
-                        <div class='col-2' style=\"margin-left:5px;\">
-                        <input onkeyup='checkdupe(\"kolom9\")' oninput='this.value = this.value.toUpperCase()' maxlength='5' type='text' class='form-control' id='kolom9' name='kolom9'>
-                        </div>
-                    </div>
-                    <div class='form-group row'>
-                        <label for='kolom10' class='col-form-label'>Kolom 10</label>
-                        <div class='col-2' style=\"margin-left:5px;margin-right:10px;\">
-                        <input onkeyup='checkdupe(\"kolom10\")' oninput='this.value = this.value.toUpperCase()' maxlength='5' type='text' class='form-control' id='kolom10' name='kolom10'>
-                        </div>
-                    </div>
-                  
-                    </div>
-                    <div class='card-footer'>
-                    <button onclick='simpansoallatihan()' type='button' class='btn btn-info'>Simpan</button>
-                    <button type='button' class='btn btn-default float-right' data-dismiss='modal' aria-label='Close'>Cancel</button>
-                    </div>";
-                    
-        $ret .= "</div>
-                </div>
-                </div>
-                </div>
-                </div>";
-
-        return $ret;
-    }
-
     public function simpansoallatihan() {
         $materi_id = $this->request->getPost('materi_id');
+        $group_id = $this->request->getPost('group_id');
         $kolom1 = $this->request->getPost('kolom1');
         $kolom2 = $this->request->getPost('kolom2');
         $kolom3 = $this->request->getPost('kolom3');
@@ -564,46 +478,39 @@ class Soal extends BaseController
         $kolom8 = $this->request->getPost('kolom8');
         $kolom9 = $this->request->getPost('kolom9');
         $kolom10 = $this->request->getPost('kolom10');
-        $sk_group_id = 1;
-        $res_sk_group = $this->soalmodel->getSKgroup()->getResult();
-        if (count($res_sk_group)>0) {
-            $sk_num = mb_substr($res_sk_group[0]->sk_group_nm, -1);
-            $num = $sk_num + 1;
-            $data = [
-                "sk_group_nm" => "Sikap Kerja ".$num
-            ];
-
-            $sk_group_id = $this->soalmodel->insertSKgroup($data);
+        
+        if ($materi_id == 15) {
+            $sk_group_id = 8;
+        } else if ($materi_id == 16) {
+            $sk_group_id = 9;
+        } else if ($materi_id == 18) {
+            $sk_group_id = 10;
         } else {
-            $data = [
-                "sk_group_nm" => "Sikap Kerja 1"
-            ];
-
-            $sk_group_id = $this->soalmodel->insertSKgroup($data);
+            $sk_group_id = 0;
         }
         
 
 
-        $res = $this->randomchar($kolom1,1,$materi_id,$sk_group_id);
+        $res = $this->randomchar($kolom1,1,$materi_id,$sk_group_id,$group_id);
         // log_message("info",$res);
         if ($res == "finish") {
-            $res = $this->randomchar($kolom2,2,$materi_id,$sk_group_id);
+            $res = $this->randomchar($kolom2,2,$materi_id,$sk_group_id,$group_id);
             if ($res == "finish") {
-                $res = $this->randomchar($kolom3,3,$materi_id,$sk_group_id);
+                $res = $this->randomchar($kolom3,3,$materi_id,$sk_group_id,$group_id);
                 if ($res == "finish") {
-                    $res = $this->randomchar($kolom4,4,$materi_id,$sk_group_id);
+                    $res = $this->randomchar($kolom4,4,$materi_id,$sk_group_id,$group_id);
                     if ($res == "finish") {
-                        $res = $this->randomchar($kolom5,5,$materi_id,$sk_group_id);
+                        $res = $this->randomchar($kolom5,5,$materi_id,$sk_group_id,$group_id);
                         if ($res == "finish") {
-                            $res = $this->randomchar($kolom6,6,$materi_id,$sk_group_id);
+                            $res = $this->randomchar($kolom6,6,$materi_id,$sk_group_id,$group_id);
                             if ($res == "finish") {
-                                $res = $this->randomchar($kolom7,7,$materi_id,$sk_group_id);
+                                $res = $this->randomchar($kolom7,7,$materi_id,$sk_group_id,$group_id);
                                 if ($res == "finish") {
-                                    $res = $this->randomchar($kolom8,8,$materi_id,$sk_group_id);
+                                    $res = $this->randomchar($kolom8,8,$materi_id,$sk_group_id,$group_id);
                                     if ($res == "finish") {
-                                        $res = $this->randomchar($kolom9,9,$materi_id,$sk_group_id);
+                                        $res = $this->randomchar($kolom9,9,$materi_id,$sk_group_id,$group_id);
                                         if ($res == "finish") {
-                                            $res = $this->randomchar($kolom10,10,$materi_id,$sk_group_id);
+                                            $res = $this->randomchar($kolom10,10,$materi_id,$sk_group_id,$group_id);
                                         }
                                     }
                                 }
@@ -634,11 +541,16 @@ class Soal extends BaseController
         return $soal_nm;
     }
 
-    public function randomchar($char,$kolom,$materi_id,$sk_group_id) {
+    public function randomchar($char,$kolom,$materi_id,$sk_group_id,$group_id = 4) {
         $characters = $char; 
         $pilihan = "ABCDE";
         $kunci = "";
         $no = 1;
+        $typesoal = 'text';
+
+        if ($materi_id == 18) {
+            $typesoal = 'gambar';
+        }
         for ($i = 0; $i < 50; $i++) {
             $indexs = rand(0, strlen($pilihan) - 1);
             $kunci = $pilihan[$indexs];
@@ -664,14 +576,15 @@ class Soal extends BaseController
 
             $data = [
                 'soal_nm' => $soal_nm,
-                'group_id' => 4,
+                'group_id' => $group_id,
                 'no_soal' => $no,
                 'kunci' => $kunci,
                 'materi' => $materi_id,
                 'status_cd' => 'normal',
                 'kolom_id' => $kolom,
                 'clue' => $characters,
-                'sk_group_id' => $sk_group_id
+                'sk_group_id' => $sk_group_id,
+                'typesoal' => $typesoal
             ];
 
             $soal_id = $this->soalmodel->insertsoalSKlatihan($data);

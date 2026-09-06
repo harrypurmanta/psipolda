@@ -28,8 +28,6 @@ class Reset extends BaseController
 
     public function resetResponBySatuan() {
         $satuan_id = $this->request->getPost('satuan_id');
-
-
         $reset = $this->satuanmodel->resetResponBySatuan($satuan_id);
         if ($reset) {
             # code...

@@ -105,7 +105,7 @@
 <script>
   $(function () {
     $('#table_materi').DataTable({
-      "paging": true,
+      "paging": false,
       "lengthChange": false,
       "searching": true,
       "ordering": true,

@@ -1,6 +1,3 @@
-<?php
-$request = \Config\Services::request();
-?>
 <!DOCTYPE html>
 <html>
 <head>
@@ -25,11 +22,14 @@ $request = \Config\Services::request();
             <div class="container">
                 <section class="content">
                     <div class="row">
-                        <div class="col-md-12" style="height: 400px;">
-                            <div class="bg-gray col-md-8 text-center" style="top: 50%;left: 50%;transform: translate(-50%, -50%);height: 350px;">
-                                <h3 style="padding-top:10px;"><b>PETUNJUK PENGERJAAN</b></h3>
-                                <p class="col-md-12" style="text-align: center; font-size: 18px;">Pilihlah pernyataan yang paling tepat menurut Anda</p>
-                                <a href='<?= base_url() ?>/srq29/ujian/<?= $request->uri->getSegment(3) ?>/<?= $request->uri->getSegment(4) ?>' class='btn btn-success' style='font-size:18px;'>Mulai</a>
+                        <div class="col-md-12">
+                            <div class="bg-gray col-md-12 text-center">
+                                <h2 style="margin-bottom: 5px;"><b>TERIMA KASIH</b></h2>
+                                <h2 style="margin-top: 5px;"><b>Anda telah selesai mengerjakan materi M</b></h2>
+                                
+                                <div class="col-md-12" style="display: flex;justify-content: center;margin-top:10px;padding-bottom:20px;">
+                                    <a href="<?= base_url() ?>" class="btn btn-primary">Kembali</a>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -43,5 +43,7 @@ $request = \Config\Services::request();
     <script src="<?= base_url() ?>/bower_components/jquery-slimscroll/jquery.slimscroll.min.js"></script>
     <script src="<?= base_url() ?>/bower_components/fastclick/lib/fastclick.js"></script>
     <script src="<?= base_url() ?>/dist/js/adminlte.min.js"></script>
+    <script src="<?= base_url() ?>/dist/js/demo.js"></script>
 </body>
+
 </html>

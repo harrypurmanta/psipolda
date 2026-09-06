@@ -22,9 +22,6 @@ $this->session = \Config\Services::session();
               if ($this->session->user_group == "owner") {
                 echo "<li class='nav-item'>
                         <a href='".base_url() ."/admin/soal' class='nav-link' style='color:#ffffff;'>Soal</a>
-                      </li>
-                      <li class='nav-item'>
-                        <a href='".base_url() ."/admin/jawaban' class='nav-link' style='color:#ffffff;'>Jawaban</a>
                       </li>";
               }
           ?>  
