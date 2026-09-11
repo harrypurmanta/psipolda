@@ -165,6 +165,8 @@
       window.location.href = "<?= base_url() ?>/admin/hasil/hasilexcelkatosus/"+start_dttm+"/"+end_dttm+"/"+group_id+"/"+materi_id
     } else if (group_id == 12){
       window.location.href = "<?= base_url() ?>/admin/hasil/hasilexcelsrq29/"+start_dttm+"/"+end_dttm+"/"+group_id+"/"+materi_id
+    } else if (group_id == 13){
+      window.location.href = "<?= base_url() ?>/admin/hasil/usersikapkerja/"+start_dttm+"/"+end_dttm+"/"+group_id+"/"+materi_id
     }
     
  }

@@ -391,6 +391,34 @@ class Usersmodel extends Model
                         ->get(); 
     }
 
+    public function getUserHasilSikapKerja($start_dttm, $end_dttm, $group_id = 13, $materi_id = null) {
+        $builder = $this->db->table('respon a')
+                        ->select('c.person_nm, c.satuan, DATE(c.birth_dttm) AS birth_dttm, c.birth_place, c.gender_cd, c.cellphone, b.user_id, a.created_user_id, a.materi, d.satuan_nm, e.pendidikan_nm, f.materi_nm, g.no_antrian as no_tes')
+                        ->join('users b','b.user_id = a.created_user_id', 'left')
+                        ->join('person c','c.person_id = b.person_id', 'left')
+                        ->join('satuan d','d.satuan_id = c.satuan', 'left')
+                        ->join('pendidikan e','e.pendidikan_id = c.pendidikan', 'left')
+                        ->join('materi f', 'f.materi_id = a.materi', 'left')
+                        ->join('user_exam g', 'g.user_id = a.created_user_id AND g.group_id = a.group_id', 'left')
+                        ->where('a.group_id', $group_id)
+                        ->where('a.status_cd !=', 'nullified');
+
+        if (!empty($start_dttm)) {
+            $builder->where('a.created_dttm >=', $start_dttm . ' 00:00:00');
+        }
+        if (!empty($end_dttm)) {
+            $builder->where('a.created_dttm <=', $end_dttm . ' 23:59:59');
+        }
+
+        if (!empty($materi_id) && $materi_id !== "semua") {
+            $builder->where('a.materi', $materi_id);
+        }
+
+        return $builder->groupBy('a.created_user_id, b.user_id, c.person_nm, c.satuan, c.birth_dttm, c.birth_place, c.gender_cd, c.cellphone, a.materi, d.satuan_nm, e.pendidikan_nm, f.materi_nm, g.no_antrian')
+                       ->orderBy('g.no_antrian ASC, a.created_user_id ASC')
+                       ->get();
+    }
+
 
 
     public function getHasilKreplinByUser($start_dttm,$end_dttm,$user_id,$kolom_id,$sk_group_id) {

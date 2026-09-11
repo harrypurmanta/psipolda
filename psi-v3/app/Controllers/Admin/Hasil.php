@@ -49,6 +49,439 @@
             
             return view('admin/usertiu5');
         }
+
+        public function usersikapkerja() {
+            if ($this->session->get("user_nm") == "") {
+                return redirect('/');
+            }
+            $start_dttm = $this->request->getUri()->getSegment(4) ?: date("Y-m-d");
+            $end_dttm = $this->request->getUri()->getSegment(5) ?: date("Y-m-d");
+            $group_id = $this->request->getUri()->getSegment(6) ?: 13;
+            $materi_id = $this->request->getUri()->getSegment(7) ?: '';
+
+            $data = [
+                "materi" => $this->soalmodel->getMateriByGroupId(13)->getResult(),
+                "start_dttm" => $start_dttm,
+                "end_dttm" => $end_dttm,
+                "group_id" => $group_id,
+                "materi_id" => $materi_id
+            ];
+            return view('admin/usersikapkerja', $data);
+        }
+
+        public function getUserSikapKerja() {
+            if ($this->session->get("user_nm") == "") {
+                return $this->response->setJSON([]);
+            }
+            $start_dttm = $this->request->getPost("start_date") ?? $this->request->getGet("start_date");
+            $end_dttm = $this->request->getPost("end_date") ?? $this->request->getGet("end_date");
+            $materi_id = $this->request->getPost("materi_id") ?? $this->request->getGet("materi_id");
+            $group_id = 13;
+
+            $data = $this->usermodel->getUserHasilSikapKerja($start_dttm, $end_dttm, $group_id, $materi_id)->getResult();
+            return $this->response->setJSON($data);
+        }
+
+        public function hasilsikapkerja() {
+            if ($this->session->get("user_nm") == "") {
+                return redirect('/');
+            }
+            $request = \Config\Services::request();
+            $start_dttm = $request->uri->getSegment(4);
+            $end_dttm = $request->uri->getSegment(5);
+            $user_id = $request->uri->getSegment(6);
+            $materi_id = $request->uri->getSegment(7);
+            $group_id = 13;
+
+            $user = $this->usermodel->getbyUserId($user_id)->getResult();
+            $materi_res = $this->soalmodel->getMateriById($materi_id)->getResult();
+            $materi_nm = count($materi_res) > 0 ? $materi_res[0]->materi_nm : "Sikap Kerja";
+
+            $db = \Config\Database::connect();
+            $kolom_list = $db->table('soal a')
+                ->select('a.kolom_id, COALESCE(b.kolom_nm, CONCAT("Kolom ", a.kolom_id)) as kolom_nm')
+                ->join('kolom_soal b', 'b.kolom_id = a.kolom_id', 'left')
+                ->where('a.materi', $materi_id)
+                ->where('a.status_cd', 'normal')
+                ->groupBy('a.kolom_id')
+                ->orderBy('a.kolom_id', 'ASC')
+                ->get()
+                ->getResult();
+
+            if (empty($kolom_list)) {
+                $kolom_list = $db->table('respon a')
+                    ->select('a.kolom_id, COALESCE(b.kolom_nm, CONCAT("Kolom ", a.kolom_id)) as kolom_nm')
+                    ->join('kolom_soal b', 'b.kolom_id = a.kolom_id', 'left')
+                    ->where('a.materi', $materi_id)
+                    ->where('a.created_user_id', $user_id)
+                    ->groupBy('a.kolom_id')
+                    ->orderBy('a.kolom_id', 'ASC')
+                    ->get()
+                    ->getResult();
+            }
+
+            if (empty($kolom_list)) {
+                $kolom_list = [];
+                for ($i = 1; $i <= 10; $i++) {
+                    $kolom_list[] = (object)[
+                        'kolom_id' => $i,
+                        'kolom_nm' => "Kolom " . $i
+                    ];
+                }
+            }
+
+            $hasil_kolom = [];
+            $total_terjawab = 0;
+            $total_benar = 0;
+            $total_salah = 0;
+
+            foreach ($kolom_list as $klm) {
+                $kolom_id = $klm->kolom_id;
+                $kolom_nm = !empty($klm->kolom_nm) ? $klm->kolom_nm : "Kolom " . $kolom_id;
+
+                $respon = $db->table('respon a')
+                    ->select('a.pilihan_nm, c.kunci')
+                    ->join('soal c', 'c.soal_id = a.soal_id', 'left')
+                    ->where('a.created_user_id', $user_id)
+                    ->where('a.materi', $materi_id)
+                    ->where('a.kolom_id', $kolom_id)
+                    ->get()
+                    ->getResult();
+
+                $terjawab = 0;
+                $benar = 0;
+                $salah = 0;
+
+                if (count($respon) > 0) {
+                    foreach ($respon as $r) {
+                        if (!empty($r->pilihan_nm) && $r->pilihan_nm !== 'null') {
+                            $terjawab++;
+                            if (!empty($r->kunci) && trim(strtoupper($r->pilihan_nm)) === trim(strtoupper($r->kunci))) {
+                                $benar++;
+                            } else {
+                                $salah++;
+                            }
+                        }
+                    }
+                }
+
+                $total_terjawab += $terjawab;
+                $total_benar += $benar;
+                $total_salah += $salah;
+
+                $hasil_kolom[] = (object)[
+                    'kolom_id' => $kolom_id,
+                    'kolom_nm' => $kolom_nm,
+                    'terjawab' => $terjawab,
+                    'benar' => $benar,
+                    'salah' => $salah
+                ];
+            }
+
+            $sekarang = new \DateTime("today");
+            $thn_lahir = "0";
+            if (!empty($user) && !empty($user[0]->birth_dttm)) {
+                $tanggal_lahir = new \DateTime($user[0]->birth_dttm);
+                if ($tanggal_lahir <= $sekarang) {
+                    $thn_lahir = $sekarang->diff($tanggal_lahir)->y;
+                }
+            }
+
+            $tanggal_pemeriksaan = $db->table('respon')
+                ->select('created_dttm')
+                ->where('created_user_id', $user_id)
+                ->where('group_id', $group_id)
+                ->where('materi', $materi_id)
+                ->orderBy('created_dttm', 'DESC')
+                ->limit(1)
+                ->get()
+                ->getResult();
+
+            $notest = $this->usermodel->getNotest($user_id, $group_id)->getResult();
+            $no_tes = count($notest) > 0 ? $notest[0]->no_antrian : '-';
+
+            $data = [
+                'user' => $user,
+                'no_tes' => $no_tes,
+                'start_dttm' => $start_dttm,
+                'end_dttm' => $end_dttm,
+                'materi_id' => $materi_id,
+                'group_id' => $group_id,
+                'materi_nm' => $materi_nm,
+                'thn_lahir' => $thn_lahir,
+                'tanggal_pemeriksaan' => $tanggal_pemeriksaan,
+                'hasil_kolom' => $hasil_kolom,
+                'total_terjawab' => $total_terjawab,
+                'total_benar' => $total_benar,
+                'total_salah' => $total_salah,
+            ];
+
+            return view('admin/hasilsikapkerja', $data);
+        }
+
+        public function hasilsikapkerjapdf() {
+            if ($this->session->get("user_nm") == "") {
+                return redirect('/');
+            }
+            $request = \Config\Services::request();
+            $start_dttm = $request->uri->getSegment(4);
+            $end_dttm = $request->uri->getSegment(5);
+            $user_id = $request->uri->getSegment(6);
+            $materi_id = $request->uri->getSegment(7);
+            $group_id = 13;
+
+            $user = $this->usermodel->getbyUserId($user_id)->getResult();
+            $materi_res = $this->soalmodel->getMateriById($materi_id)->getResult();
+            $materi_nm = count($materi_res) > 0 ? $materi_res[0]->materi_nm : "Sikap Kerja";
+
+            $db = \Config\Database::connect();
+            $kolom_list = $db->table('soal a')
+                ->select('a.kolom_id, COALESCE(b.kolom_nm, CONCAT("Kolom ", a.kolom_id)) as kolom_nm')
+                ->join('kolom_soal b', 'b.kolom_id = a.kolom_id', 'left')
+                ->where('a.materi', $materi_id)
+                ->where('a.status_cd', 'normal')
+                ->groupBy('a.kolom_id')
+                ->orderBy('a.kolom_id', 'ASC')
+                ->get()
+                ->getResult();
+
+            if (empty($kolom_list)) {
+                $kolom_list = $db->table('respon a')
+                    ->select('a.kolom_id, COALESCE(b.kolom_nm, CONCAT("Kolom ", a.kolom_id)) as kolom_nm')
+                    ->join('kolom_soal b', 'b.kolom_id = a.kolom_id', 'left')
+                    ->where('a.materi', $materi_id)
+                    ->where('a.created_user_id', $user_id)
+                    ->groupBy('a.kolom_id')
+                    ->orderBy('a.kolom_id', 'ASC')
+                    ->get()
+                    ->getResult();
+            }
+
+            if (empty($kolom_list)) {
+                $kolom_list = [];
+                for ($i = 1; $i <= 10; $i++) {
+                    $kolom_list[] = (object)[
+                        'kolom_id' => $i,
+                        'kolom_nm' => "Kolom " . $i
+                    ];
+                }
+            }
+
+            $hasil_kolom = [];
+            $total_terjawab = 0;
+            $total_benar = 0;
+            $total_salah = 0;
+
+            foreach ($kolom_list as $klm) {
+                $kolom_id = $klm->kolom_id;
+                $kolom_nm = !empty($klm->kolom_nm) ? $klm->kolom_nm : "Kolom " . $kolom_id;
+
+                $respon = $db->table('respon a')
+                    ->select('a.pilihan_nm, c.kunci')
+                    ->join('soal c', 'c.soal_id = a.soal_id', 'left')
+                    ->where('a.created_user_id', $user_id)
+                    ->where('a.materi', $materi_id)
+                    ->where('a.kolom_id', $kolom_id)
+                    ->get()
+                    ->getResult();
+
+                $terjawab = 0;
+                $benar = 0;
+                $salah = 0;
+
+                if (count($respon) > 0) {
+                    foreach ($respon as $r) {
+                        if (!empty($r->pilihan_nm) && $r->pilihan_nm !== 'null') {
+                            $terjawab++;
+                            if (!empty($r->kunci) && trim(strtoupper($r->pilihan_nm)) === trim(strtoupper($r->kunci))) {
+                                $benar++;
+                            } else {
+                                $salah++;
+                            }
+                        }
+                    }
+                }
+
+                $total_terjawab += $terjawab;
+                $total_benar += $benar;
+                $total_salah += $salah;
+
+                $hasil_kolom[] = (object)[
+                    'kolom_id' => $kolom_id,
+                    'kolom_nm' => $kolom_nm,
+                    'terjawab' => $terjawab,
+                    'benar' => $benar,
+                    'salah' => $salah
+                ];
+            }
+
+            $sekarang = new \DateTime("today");
+            $thn_lahir = "0";
+            if (!empty($user) && !empty($user[0]->birth_dttm)) {
+                $tanggal_lahir = new \DateTime($user[0]->birth_dttm);
+                if ($tanggal_lahir <= $sekarang) {
+                    $thn_lahir = $sekarang->diff($tanggal_lahir)->y;
+                }
+            }
+
+            $tanggal_pemeriksaan = $db->table('respon')
+                ->select('created_dttm')
+                ->where('created_user_id', $user_id)
+                ->where('group_id', $group_id)
+                ->where('materi', $materi_id)
+                ->orderBy('created_dttm', 'DESC')
+                ->limit(1)
+                ->get()
+                ->getResult();
+
+            $notest = $this->usermodel->getNotest($user_id, $group_id)->getResult();
+            $no_tes = count($notest) > 0 ? $notest[0]->no_antrian : '-';
+
+            $data = [
+                'user' => $user,
+                'no_tes' => $no_tes,
+                'materi_id' => $materi_id,
+                'group_id' => $group_id,
+                'materi_nm' => $materi_nm,
+                'thn_lahir' => $thn_lahir,
+                'tanggal_pemeriksaan' => $tanggal_pemeriksaan,
+                'hasil_kolom' => $hasil_kolom,
+                'total_terjawab' => $total_terjawab,
+                'total_benar' => $total_benar,
+                'total_salah' => $total_salah,
+            ];
+
+            $html = view('admin/hasilsikapkerjapdf', $data);
+
+            $pdf = new TCPDF('P', PDF_UNIT, 'A4', true, 'UTF-8', false);
+            $pdf->SetCreator(PDF_CREATOR);
+            $pdf->SetAuthor('Bagian Psikologi Biro SDM Polda Sumsel');
+            $pdf->SetTitle('Hasil Penilaian Sikap Kerja');
+            $pdf->SetSubject('Hasil Penilaian Sikap Kerja');
+            $pdf->setPrintHeader(false);
+            $pdf->setPrintFooter(false);
+            $pdf->SetMargins(12, 12, 12);
+            $pdf->SetAutoPageBreak(TRUE, 10);
+            $pdf->addPage();
+            $pdf->writeHTML($html, true, false, true, false, '');
+            $this->response->setContentType('application/pdf');
+            $nama_file = 'Hasil_Sikap_Kerja_' . (!empty($user[0]->person_nm) ? preg_replace('/[^A-Za-z0-9_\-]/', '_', $user[0]->person_nm) : $user_id) . '.pdf';
+            $pdf->Output($nama_file, 'I');
+            exit;
+        }
+
+        public function hasilsikapkerjasemuapdf() {
+            if ($this->session->get("user_nm") == "") {
+                return redirect('/');
+            }
+            $request = \Config\Services::request();
+            $start_dttm = $request->uri->getSegment(4) ?: date("Y-m-d");
+            $end_dttm = $request->uri->getSegment(5) ?: date("Y-m-d");
+            $group_id = $request->uri->getSegment(6) ?: 13;
+            $materi_id = $request->uri->getSegment(7) ?: '';
+
+            $users = $this->usermodel->getUserHasilSikapKerja($start_dttm, $end_dttm, $group_id, $materi_id)->getResult();
+            
+            $materi_nm = "Semua Materi";
+            if (!empty($materi_id) && $materi_id !== "semua") {
+                $materi_res = $this->soalmodel->getMateriById($materi_id)->getResult();
+                if (count($materi_res) > 0) {
+                    $materi_nm = $materi_res[0]->materi_nm;
+                }
+            }
+
+            $db = \Config\Database::connect();
+            $data_users = [];
+            foreach ($users as $u) {
+                $user_id = $u->user_id;
+                $u_materi = !empty($u->materi) ? $u->materi : $materi_id;
+
+                $total_terjawab = 0;
+                $total_benar = 0;
+                $total_salah = 0;
+                $kolom_detail = [];
+
+                for ($kolom_id = 1; $kolom_id <= 10; $kolom_id++) {
+                    $builder = $db->table('respon a')
+                        ->select('a.pilihan_nm, c.kunci')
+                        ->join('soal c', 'c.soal_id = a.soal_id', 'left')
+                        ->where('a.created_user_id', $user_id)
+                        ->where('a.kolom_id', $kolom_id);
+                    if (!empty($u_materi) && $u_materi !== "semua") {
+                        $builder->where('a.materi', $u_materi);
+                    }
+                    $respon = $builder->get()->getResult();
+
+                    $terjawab = 0;
+                    $benar = 0;
+                    $salah = 0;
+                    if (count($respon) > 0) {
+                        foreach ($respon as $r) {
+                            if (!empty($r->pilihan_nm) && $r->pilihan_nm !== 'null') {
+                                $terjawab++;
+                                if (!empty($r->kunci) && trim(strtoupper($r->pilihan_nm)) === trim(strtoupper($r->kunci))) {
+                                    $benar++;
+                                } else {
+                                    $salah++;
+                                }
+                            }
+                        }
+                    }
+
+                    $total_terjawab += $terjawab;
+                    $total_benar += $benar;
+                    $total_salah += $salah;
+
+                    $kolom_detail[$kolom_id] = [
+                        'terjawab' => $terjawab,
+                        'benar' => $benar,
+                        'salah' => $salah
+                    ];
+                }
+
+                $data_users[] = (object)[
+                    'user_id' => $user_id,
+                    'no_tes' => !empty($u->no_tes) ? $u->no_tes : '-',
+                    'person_nm' => $u->person_nm ?? '-',
+                    'satuan_nm' => $u->satuan_nm ?? '-',
+                    'materi_nm' => $u->materi_nm ?? $materi_nm,
+                    'pangkat' => $u->pangkat ?? '-',
+                    'nrp' => $u->nrp ?? '-',
+                    'gender_cd' => $u->gender_cd ?? '-',
+                    'cellphone' => $u->cellphone ?? '-',
+                    'total_terjawab' => $total_terjawab,
+                    'total_benar' => $total_benar,
+                    'total_salah' => $total_salah,
+                    'kolom_detail' => $kolom_detail
+                ];
+            }
+
+            $data = [
+                'users' => $data_users,
+                'start_dttm' => $start_dttm,
+                'end_dttm' => $end_dttm,
+                'materi_id' => $materi_id,
+                'materi_nm' => $materi_nm
+            ];
+
+            $html = view('admin/hasilsikapkerjasemuapdf', $data);
+
+            $pdf = new TCPDF('L', PDF_UNIT, 'A4', true, 'UTF-8', false);
+            $pdf->SetCreator(PDF_CREATOR);
+            $pdf->SetAuthor('Bagian Psikologi Biro SDM Polda Sumsel');
+            $pdf->SetTitle('Rekapitulasi Hasil Sikap Kerja');
+            $pdf->SetSubject('Rekapitulasi Hasil Sikap Kerja');
+            $pdf->setPrintHeader(false);
+            $pdf->setPrintFooter(false);
+            $pdf->SetMargins(10, 10, 10);
+            $pdf->SetAutoPageBreak(TRUE, 10);
+            $pdf->addPage();
+            $pdf->writeHTML($html, true, false, true, false, '');
+            $this->response->setContentType('application/pdf');
+            $pdf->Output('Rekap_Hasil_Sikap_Kerja_' . $start_dttm . '_sd_' . $end_dttm . '.pdf', 'I');
+            exit;
+        }
+
         public function userdass() {
             if ($this->session->get("user_nm") == "") {
                 return redirect('/');

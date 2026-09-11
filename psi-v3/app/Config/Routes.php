@@ -93,6 +93,13 @@ $routes->get('admin/hasil/latihanmateri/(:num)/(:num)', '\App\Controllers\Admin\
 $routes->post('admin/hasil/latihanmateri/(:num)/(:num)', '\App\Controllers\Admin\Hasil::latihanmateri/$1/$2');
 $routes->get('admin/hasil/hasillatihanmateri/(:num)/(:num)/(:num)', '\App\Controllers\Admin\Hasil::hasillatihanmateri/$1/$2/$3');
 $routes->post('admin/hasil/hasillatihanmateri/(:num)/(:num)/(:num)', '\App\Controllers\Admin\Hasil::hasillatihanmateri/$1/$2/$3');
+$routes->get('admin/hasil/usersikapkerja', '\App\Controllers\Admin\Hasil::usersikapkerja');
+$routes->get('admin/hasil/usersikapkerja/(:segment)/(:segment)/(:segment)/(:segment)', '\App\Controllers\Admin\Hasil::usersikapkerja/$1/$2/$3/$4');
+$routes->post('admin/hasil/getUserSikapKerja', '\App\Controllers\Admin\Hasil::getUserSikapKerja');
+$routes->get('admin/hasil/getUserSikapKerja', '\App\Controllers\Admin\Hasil::getUserSikapKerja');
+$routes->get('admin/hasil/hasilsikapkerja/(:segment)/(:segment)/(:segment)/(:segment)', '\App\Controllers\Admin\Hasil::hasilsikapkerja/$1/$2/$3/$4');
+$routes->get('admin/hasil/hasilsikapkerjapdf/(:segment)/(:segment)/(:segment)/(:segment)', '\App\Controllers\Admin\Hasil::hasilsikapkerjapdf/$1/$2/$3/$4');
+$routes->get('admin/hasil/hasilsikapkerjasemuapdf/(:segment)/(:segment)/(:segment)/(:segment)', '\App\Controllers\Admin\Hasil::hasilsikapkerjasemuapdf/$1/$2/$3/$4');
 
 
 $routes->get('jawaban/showjawaban', '\App\Controllers\Admin\Jawaban::showjawaban');

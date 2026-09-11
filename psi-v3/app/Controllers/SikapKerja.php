@@ -203,7 +203,7 @@ class Sikapkerja extends BaseController
                             foreach ($res as $keySoal) {
                                 $soal_nm = str_split($keySoal->soal_nm,1);
                                 foreach ($soal_nm as $jwb_nm) {
-                                    $ret .= "<div class='col-md-2' style='background-color:grey; min-height:40px; font-size:45px; font-weight:bold; text-align:center; margin:5px; display: inline-block;'>
+                                    $ret .= "<div class='col-md-2' style='background-color:grey; min-height:40px; font-size:55px; font-weight:bold; text-align:center; margin:5px; display: inline-block;'>
                             ".$jwb_nm."</div>";
                                 }
                             }
@@ -239,10 +239,133 @@ class Sikapkerja extends BaseController
     }
 
     public function hasiltryout() {
+        if ($this->session->get("user_nm") == "") {
+            return redirect('/');
+        }
+
         $request = \Config\Services::request();
-        $user_id = $this->session->user_id;
+        $user_id = $this->session->get("user_id") ?? $this->session->user_id;
         $materi_id = $request->uri->getSegment(3);
-       
-        return view('front/sikapkerja/hasiltryout');
+        $group_id = $request->uri->getSegment(4);
+
+        $materi_res = $this->soalmodel->getMateriById($materi_id)->getResult();
+        $materi_nm = count($materi_res) > 0 ? $materi_res[0]->materi_nm : "Sikap Kerja";
+
+        $db = \Config\Database::connect();
+
+        // Ambil daftar kolom yang ada pada soal untuk materi ini
+        $kolom_list = $db->table('soal a')
+            ->select('a.kolom_id, COALESCE(b.kolom_nm, CONCAT("Kolom ", a.kolom_id)) as kolom_nm')
+            ->join('kolom_soal b', 'b.kolom_id = a.kolom_id', 'left')
+            ->where('a.materi', $materi_id)
+            ->where('a.status_cd', 'normal')
+            ->groupBy('a.kolom_id')
+            ->orderBy('a.kolom_id', 'ASC')
+            ->get()
+            ->getResult();
+
+        if (empty($kolom_list)) {
+            // Coba ambil dari respon user
+            $kolom_list = $db->table('respon a')
+                ->select('a.kolom_id, COALESCE(b.kolom_nm, CONCAT("Kolom ", a.kolom_id)) as kolom_nm')
+                ->join('kolom_soal b', 'b.kolom_id = a.kolom_id', 'left')
+                ->where('a.materi', $materi_id)
+                ->where('a.created_user_id', $user_id)
+                ->groupBy('a.kolom_id')
+                ->orderBy('a.kolom_id', 'ASC')
+                ->get()
+                ->getResult();
+        }
+
+        if (empty($kolom_list)) {
+            $kolom_list = $db->table('kolom_soal')
+                ->select('kolom_id, kolom_nm')
+                ->orderBy('kolom_id', 'ASC')
+                ->get()
+                ->getResult();
+        }
+
+        if (empty($kolom_list)) {
+            $kolom_list = [];
+            for ($i = 1; $i <= 10; $i++) {
+                $kolom_list[] = (object)[
+                    'kolom_id' => $i,
+                    'kolom_nm' => "Kolom " . $i
+                ];
+            }
+        }
+
+        $hasil_kolom = [];
+        $total_terjawab = 0;
+        $total_benar = 0;
+        $total_salah = 0;
+        $chart_labels = [];
+        $chart_terjawab = [];
+        $chart_benar = [];
+        $chart_salah = [];
+
+        foreach ($kolom_list as $klm) {
+            $kolom_id = $klm->kolom_id;
+            $kolom_nm = !empty($klm->kolom_nm) ? $klm->kolom_nm : "Kolom " . $kolom_id;
+
+            $respon = $db->table('respon a')
+                ->select('a.pilihan_nm, c.kunci')
+                ->join('soal c', 'c.soal_id = a.soal_id', 'left')
+                ->where('a.created_user_id', $user_id)
+                ->where('a.materi', $materi_id)
+                ->where('a.kolom_id', $kolom_id)
+                ->get()
+                ->getResult();
+
+            $terjawab = 0;
+            $benar = 0;
+            $salah = 0;
+
+            if (count($respon) > 0) {
+                foreach ($respon as $r) {
+                    if (!empty($r->pilihan_nm) && $r->pilihan_nm !== 'null') {
+                        $terjawab++;
+                        if (!empty($r->kunci) && trim(strtoupper($r->pilihan_nm)) === trim(strtoupper($r->kunci))) {
+                            $benar++;
+                        } else {
+                            $salah++;
+                        }
+                    }
+                }
+            }
+
+            $total_terjawab += $terjawab;
+            $total_benar += $benar;
+            $total_salah += $salah;
+
+            $chart_labels[] = $kolom_nm;
+            $chart_terjawab[] = $terjawab;
+            $chart_benar[] = $benar;
+            $chart_salah[] = $salah;
+
+            $hasil_kolom[] = (object)[
+                'kolom_id' => $kolom_id,
+                'kolom_nm' => $kolom_nm,
+                'terjawab' => $terjawab,
+                'benar' => $benar,
+                'salah' => $salah
+            ];
+        }
+
+        $data = [
+            'materi_id' => $materi_id,
+            'group_id' => $group_id,
+            'materi_nm' => $materi_nm,
+            'hasil_kolom' => $hasil_kolom,
+            'total_terjawab' => $total_terjawab,
+            'total_benar' => $total_benar,
+            'total_salah' => $total_salah,
+            'chart_labels' => $chart_labels,
+            'chart_terjawab' => $chart_terjawab,
+            'chart_benar' => $chart_benar,
+            'chart_salah' => $chart_salah,
+        ];
+
+        return view('front/sikapkerja/hasiltryout', $data);
     }
 }
