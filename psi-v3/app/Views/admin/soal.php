@@ -13,6 +13,7 @@
   <link rel="stylesheet" href="<?= base_url() ?>/plugins/datatables-responsive/css/responsive.bootstrap4.min.css">
   <link rel="stylesheet" href="<?= base_url() ?>/plugins/datatables-buttons/css/buttons.bootstrap4.min.css">
   <link rel="stylesheet" href="<?= base_url() ?>/dist/dist/css/adminlte.min.css">
+  <link rel="stylesheet" href="<?= base_url() ?>/plugins/sweetalert2/sweetalert2.css">
   <style>
     #loader-wrapper {
       display: flex;
@@ -259,7 +260,7 @@
 
               <hr>
 
-              <div class="form-group">
+              <div class="form-group" id="dv_form_text">
                 <label class="font-weight-bold mb-2">Karakter Kolom (5 Karakter unik per Kolom):</label>
                 <div class="row">
                   <div class="col-md-4 col-12 mb-3">
@@ -313,6 +314,20 @@
                   </div>
                 </div>
               </div>
+
+              <div class="form-group d-none" id="dv_form_gambar">
+                <label class="font-weight-bold mb-2">Gambar Kolom (5 Gambar unik per Kolom):</label>
+                <div class="row">
+                  <?php foreach ($kolom as $key) { ?>
+                  <div class="col-md-6 col-12 mb-3">
+                    <label for="kolom_gambar<?= $key->kolom_id ?>" class="col-form-label font-weight-bold"><?= $key->kolom_nm ?></label>
+                    <input type="file" class="form-control" id="kolom_gambar<?= $key->kolom_id ?>" name="kolom_gambar<?= $key->kolom_id ?>" multiple>
+                    <button type="button" onclick="simpansoalgambar(<?= $key->kolom_id ?>)" class="btn btn-success">Simpan</button>
+                  </div>
+                  
+                  <?php } ?>
+                </div>
+              </div>
             </form>
           </div>
           <div class="modal-footer justify-content-between">
@@ -362,6 +377,7 @@
 <script src="<?= base_url() ?>/plugins/datatables-responsive/js/responsive.bootstrap4.min.js"></script>
 <script src="<?= base_url() ?>/plugins/datatables-buttons/js/dataTables.buttons.min.js"></script>
 <script src="<?= base_url() ?>/plugins/datatables-buttons/js/buttons.bootstrap4.min.js"></script>
+<script src="<?= base_url() ?>/plugins/sweetalert2/sweetalert2.js"></script>
 <!-- AdminLTE App -->
 <script src="<?= base_url() ?>/dist/dist/js/adminlte.min.js"></script>
 <!-- Page specific script -->
@@ -380,6 +396,17 @@
     $("input[data-bootstrap-switch]").each(function(){
       $(this).bootstrapSwitch('state', $(this).prop('checked'));
     })
+  });
+
+  $('#sk_materi_id').change(function() {
+    var materi_id = $(this).val();
+    if (materi_id == 18) {
+      $('#dv_form_text').addClass('d-none');
+      $('#dv_form_gambar').removeClass('d-none');
+    } else {
+      $('#dv_form_text').removeClass('d-none');
+      $('#dv_form_gambar').addClass('d-none');
+    }
   });
 
   function showsoal(filter) {
@@ -588,6 +615,66 @@
       }
     });
   }
+
+  function simpansoalgambar(kolom) {
+        var kolom_lama = $("#kolom"+kolom+"_lama").val();
+
+          let inputFile = document.getElementById("kolom_gambar" + kolom);
+          let files = inputFile.files;
+          
+          if (files.length < 5) {
+              Swal.fire("Gagal", "Minimal harus upload 5 file", "warning");
+              return;
+          }
+
+          if (files.length > 5) {
+              Swal.fire("Gagal", "Maksimal hanya boleh 5 file", "warning");
+              return;
+          }
+
+          if (files.length === 0) {
+              Swal.fire("Pilih file terlebih dahulu", "", "warning");
+              return;
+          }
+
+          let formData = new FormData();
+
+          for (let i = 0; i < files.length; i++) {
+              formData.append("gambar[]", files[i]);
+          }
+
+          formData.append("kolom", kolom);
+          formData.append("kolom_lama", kolom_lama);
+          formData.append("group_id", 13);
+
+          $.ajax({
+              url: "<?= base_url('admin/soal/simpansoalgambar') ?>",
+              type: "POST",
+              data: formData,
+              processData: false,
+              contentType: false,
+              dataType: "json",
+
+              beforeSend: function () {
+                  $("#loader-wrapper").show();
+              },
+
+              success: function (res) {
+                  $("#loader-wrapper").hide();
+
+                  if (res == "sukses") {
+                      Swal.fire("Berhasil", "Soal berhasil disimpan", "success")
+                  } else {
+                      Swal.fire("Gagal", res.message, "error");
+                  }
+              },
+
+              error: function () {
+                  $("#loader-wrapper").hide();
+                  Swal.fire("Error", "Upload gagal", "error");
+              }
+          });
+    }
 
   function tambahsoal() {
     $.ajax({

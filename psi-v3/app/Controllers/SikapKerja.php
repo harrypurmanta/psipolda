@@ -163,7 +163,7 @@ class Sikapkerja extends BaseController
                                     foreach ($getjawaban as $key) {
                                         $jawaban_nm = explode('|', $key->jawaban_nm);
                                         foreach ($jawaban_nm as $jwb_nm) {
-                                            $src = base_url("images/soalsk/kolom/$kolom_id/sk_group/$sk_group_id/$jwb_nm");
+                                            $src = base_url("images/soalskgambar/kolom/$kolom_id/sk_group/10/$jwb_nm");
                                             $ret .= "<td width='70'><img src='$src' style='height: 100px; width: 100px; margin: 5px;'></td>";
                                         }
                                     }
@@ -195,7 +195,7 @@ class Sikapkerja extends BaseController
                             foreach ($res as $keySoal) {
                                 $soal_nm = explode('|', $keySoal->soal_nm);
                                 foreach ($soal_nm as $jwb_nm) {
-                                    $src = base_url("images/soalsk/kolom/$kolom_id/sk_group/$sk_group_id/$jwb_nm");
+                                    $src = base_url("images/soalskgambar/kolom/$kolom_id/sk_group/10/$jwb_nm");
                                     $ret .= "<img src='$src' style='height: 100px; width: 100px; margin: 5px;'>";
                                 }
                             }

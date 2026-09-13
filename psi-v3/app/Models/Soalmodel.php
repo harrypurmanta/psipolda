@@ -38,6 +38,13 @@ class Soalmodel extends Model
                         ->get();
     }
 
+    public function getKolom() {
+        return $this->db->table('kolom_soal')
+                        ->select('*')
+                        ->where('status_cd','normal')
+                        ->get();
+    }
+
     public function getKolomSoal() {
         return $this->db->table('soal a')
                         ->select('a.kolom_id')

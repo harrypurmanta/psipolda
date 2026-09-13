@@ -147,7 +147,7 @@ $request = \Config\Services::request();
                     <div class="row" style="margin-top:10px;">
                         <div class="col-md-12">
                             <div class="bg-gray col-md-12" style="border-radius:5px;">
-                            <label style="margin-top:10px;font-size:18px;" for="pertanyaan">Selamat bekerja <span id="group_nm"></span> </label>
+                            <label style="margin-top:10px;font-size:18px;" for="lb_kolom" id="lb_kolom"></label>
                                 <div id="dv_soal" class="col-md-12"
                                     style="min-height:140px;background-color:#aeaebb;border-radius:5px;padding-bottom: 5px;text-align: justify;">
                                     <label id="p_no_soal" style="margin-top:10px;font-size:18px;"></label>

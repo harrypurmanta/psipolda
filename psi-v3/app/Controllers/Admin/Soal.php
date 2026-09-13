@@ -6,6 +6,7 @@ use App\Models\Soalmodel;
 class Soal extends BaseController
 {
     protected $soalmodel;
+    protected $session;
     public function __construct()
 	{
 		$this->session = \Config\Services::session();
@@ -21,6 +22,7 @@ class Soal extends BaseController
             $data = [
                 'materi' => $this->soalmodel->getjawAllJMateri()->getResult(),
                 'group' => $this->soalmodel->getGroup()->getResult(),
+                'kolom' => $this->soalmodel->getkolom()->getResult(),
                 'soal' => $this->showsoal()
             ];
             return view('admin/soal',$data);
@@ -613,6 +615,148 @@ class Soal extends BaseController
 
         $update = $this->soalmodel->updatestatus($jawaban_nm,$kolom_id,$status_cd,$old_status);
         log_message("debug",$status_cd);
+    }
+
+    public function simpansoalgambar() {
+        if ($this->session->get("user_nm") == "") {
+			return view('login');
+		} 
+
+        $files = $this->request->getFiles();
+
+        if (!isset($files['gambar'])) {
+            return $this->response->setJSON([
+                'status' => false,
+                'message' => 'File tidak ditemukan'
+            ]);
+        }
+
+        $kolom_id = $this->request->getPost('kolom');
+        $kolom_lama = $this->request->getPost('kolom_lama');
+        $sk_group_id = 10;
+        $user_group = $this->request->getPost('user_group');
+        $group_id = $this->request->getPost('group_id');
+
+        $soal_nm = [];  
+        $allowedMime = ['image/png', 'image/jpg', 'image/jpeg'];
+
+        $path = FCPATH . "images/soalskgambar/kolom/$kolom_id/sk_group/$sk_group_id";
+
+        if (!is_dir($path)) {
+            mkdir($path, 0777, true);
+        }
+
+        $uploadedFiles = [];
+        $i = 1;
+        foreach ($files['gambar'] as $file) {
+            // validasi mime
+            if (!in_array($file->getMimeType(), $allowedMime)) {
+                return $this->response->setJSON([
+                    'status' => false,
+                    'message' => 'Hanya gambar diperbolehkan (gambarsk' . $i . ')'
+                ]);
+            }
+
+            if ($i == 1) {
+                $pilihan = 'A';
+            } else if ($i == 2) {
+                $pilihan = 'B';
+            } else if ($i == 3) {
+                $pilihan = 'C';
+            } else if ($i == 4) {
+                $pilihan = 'D';
+            } else if ($i == 5) {
+                $pilihan = 'E';
+            }
+
+            $newName = $i . $pilihan  . '_' . $kolom_id . '_' . $sk_group_id . '.' . $file->getExtension();
+            $fullPath = $path . '/' . $newName;
+
+            // replace file lama
+            if (file_exists($fullPath)) {
+                unlink($fullPath);
+            }
+
+            if ($file->move($path, $newName)) {
+                $uploadedFiles[] = $newName;
+                $soal_nm[] = $newName;
+            } else {
+                return $this->response->setJSON([
+                    'status' => false,
+                    'message' => $file->getErrorString()
+                ]);
+            }
+
+            
+            $i++;
+        }
+
+        $soal_nm = implode('|', $soal_nm);
+        $res = $this->randomcharGambar($soal_nm, $kolom_id, 18, $sk_group_id);
+        return $res;
+
+    }
+
+    public function randomcharGambar($char, $kolom, $materi_id, $sk_group_id)
+    {
+        $characters = explode('|', $char);
+        $pilihan = "ABCDE";
+        $kunci = "";
+        $no = 1;
+
+        for ($i = 0; $i < 50; $i++) {
+
+            $indexs = rand(0, strlen($pilihan) - 1);
+            $kunci = $pilihan[$indexs];
+            
+            $index = ord($kunci) - 65;
+            $hilang = $characters[$index] ?? '';
+             
+            $soal_txt = $this->randsoalGambar($characters);
+            $soal_arr = explode('|', $soal_txt);
+            $soal_arr = array_values(array_diff($soal_arr, [$hilang]));
+            $soal_nm = implode('|', $soal_arr); 
+
+            $data = [
+                'soal_nm' => $soal_nm,
+                'group_id' => 13,
+                'no_soal' => $no,
+                'kunci' => $kunci,
+                'materi' => $materi_id,
+                'status_cd' => 'normal',
+                'kolom_id' => $kolom,
+                'clue' => $char, // simpan string aslinya
+                'sk_group_id' => $sk_group_id,
+                'typesoal' => "gambar"
+            ];
+
+            $soal_id = $this->soalmodel->insertsoalSKlatihan($data);
+
+            $datax = [
+                "soal_id" => $soal_id,
+                "pilihan_nm" => $pilihan,
+                "jawaban_nm" => $char,
+                "jawaban_img" => "",
+                "status_cd" => "normal"
+            ];
+
+            $this->soalmodel->insertjawabanSKlatihan($datax);
+            $no++;
+        }
+
+        echo json_encode("sukses");
+    }
+
+    public function randsoalGambar(array $characters): string
+    {
+        // acak urutan
+        shuffle($characters);
+
+        // ambil 5 (aman kalau isinya memang 5)
+        $selected = array_slice($characters, 0, 5);
+
+        // gabungkan jadi string
+        return implode('|', $selected);
     }
 
 }
