@@ -6,12 +6,33 @@ class Soalmodel extends Model
 {
     protected $table      = 'soal';
     protected $primaryKey = 'soal_id ';
-    protected $allowedFields = ['soal_id','no_soal','soal_nm','soal_img','kunci','status_cd','group_id','materi'];
+    protected $allowedFields = ['soal_id','no_soal','soal_nm','soal_img','kunci','status_cd','group_id','materi','kolom_id','clue','typesoal','sk_group_id'];
+
+    public function getSoalByNoSoalGrpMtri($no_soal, $group_id, $materi_id, $kolom_id = null) {
+        $builder = $this->db->table('soal')
+                        ->select('*')
+                        ->where('no_soal',$no_soal)
+                        ->where('group_id',$group_id)
+                        ->where('materi',$materi_id)
+                        ->where('status_cd','normal');
+        if ($kolom_id !== null && $kolom_id !== '') {
+            $builder->where('kolom_id', $kolom_id);
+        }
+        return $builder->get();
+    }
 
     public function getAllJMateri() {
         return $this->db->table('materi')
                         ->select('*')
                         ->where('status_cd','normal')
+                        ->get();
+    }
+
+    public function getMateriInMateriN() {
+        return $this->db->table('materi')
+                        ->select('*')
+                        ->where('status_cd','normal')
+                        ->whereIn('materi_id', [19, 20, 21])
                         ->get();
     }
     

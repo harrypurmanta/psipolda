@@ -12,6 +12,8 @@
   <link rel="stylesheet" href="<?= base_url() ?>/plugins/datatables-bs4/css/dataTables.bootstrap4.min.css">
   <link rel="stylesheet" href="<?= base_url() ?>/plugins/datatables-responsive/css/responsive.bootstrap4.min.css">
   <link rel="stylesheet" href="<?= base_url() ?>/plugins/datatables-buttons/css/buttons.bootstrap4.min.css">
+  <link rel="stylesheet" href="<?= base_url() ?>/plugins/select2/css/select2.min.css">
+  <link rel="stylesheet" href="<?= base_url() ?>/plugins/select2-bootstrap4-theme/select2-bootstrap4.min.css">
   <link rel="stylesheet" href="<?= base_url() ?>/dist/dist/css/adminlte.min.css">
   <link rel="stylesheet" href="<?= base_url() ?>/plugins/sweetalert2/sweetalert2.css">
   <style>
@@ -148,12 +150,13 @@
                       <div class="form-group row">
                         <label for="group_id" class="col-sm-3 col-form-label">Group Soal</label>
                         <div class="col-sm-9">
-                          <select name="group_id" id="group_id" class="form-control">
-                              <option value="" disabled <?= ($this->session->group_id == null ? "" : "selected") ?>>Pilih Materi Soal</option>
+                          <select name="group_id" id="group_id" class="form-control select2bs4" style="width: 100%;">
+                              <option value="" disabled <?= (empty($this->session->get('group_filter')) && empty($this->session->get('group_id')) ? "selected" : "") ?>>Pilih Group Soal</option>
                               <?php
+                                  $selected_group = $this->session->get('group_filter') ?? $this->session->get('group_id');
                                   foreach ($group as $key) {
                               ?>
-                              <option value="<?= $key->group_soal_id ?>">
+                              <option value="<?= $key->group_soal_id ?>" <?= ($selected_group == $key->group_soal_id ? "selected" : "") ?>>
                                   <?= $key->group_nm ?>
                               </option>
                               <?php } ?>
@@ -163,15 +166,8 @@
                       <div class="form-group row">
                         <label for="materi_id" class="col-sm-3 col-form-label">Materi Soal</label>
                         <div class="col-sm-9">
-                          <select name="materi_id" id="materi_id" class="form-control">
-                              <option value="" disabled <?= ($this->session->materi_id == null ? "" : "selected") ?>>Pilih Materi Soal</option>
-                              <?php
-                                  foreach ($materi as $key) {
-                              ?>
-                              <option value="<?= $key->materi_id ?>">
-                                  <?= $key->materi_nm ?>
-                              </option>
-                              <?php } ?>
+                          <select name="materi_id" id="materi_id" class="form-control select2bs4" style="width: 100%;">
+                              <option value="" disabled selected>Pilih Materi Soal</option>
                           </select>
                         </div>
                       </div>
@@ -189,13 +185,18 @@
                 <a href="<?= base_url() ?>/admin/soal/viewTambahsoal" class="btn btn-primary">Tambah Soal</a>
                 <button onclick="tambahsoallatihan()" class="btn btn-primary" data-toggle="modal" data-target="#modal-tambah-sk">Tambah SK</button>
                 
-                <div class="col-lg-1" style="display:inline-block;text-align:right;width:100%;">
-                  <button onclick="showsoal('all')" class="btn btn-secondary">Soal SK</button>
+                <div class="col-lg-9" style="display:inline-block;text-align:right;width:100%;">
+                  <button type="button" class="btn btn-info ml-2" data-toggle="modal" data-target="#modalImportSK">
+                    <i class="fas fa-file-excel"></i> Import Sikap Kerja (Excel)
+                  </button>
+                  <button type="button" class="btn btn-success ml-2" data-toggle="modal" data-target="#modalImportSoal">
+                    <i class="fas fa-file-excel"></i> Import Soal (Excel)
+                  </button>
                 </div>
               </div>
               </div>
               <!-- /.card-header -->
-              <div class="card-body">
+              <div class="card-body" id="dv_cardbody">
                   <table id="tbl_soal" class="table table-bordered table-hover">
                     <thead>
                       <tr>
@@ -233,7 +234,7 @@
               <div class="form-group row">
                 <label for="sk_group_id" class="col-sm-3 col-form-label font-weight-bold">Group Soal <span class="text-danger">*</span></label>
                 <div class="col-sm-9">
-                  <select name="group_id" id="sk_group_id" class="form-control">
+                  <select name="group_id" id="sk_group_id" class="form-control select2bs4" style="width: 100%;">
                     <option value="" disabled selected>Pilih Group Soal</option>
                     <?php if (!empty($group)) : ?>
                       <?php foreach ($group as $key) : ?>
@@ -247,13 +248,8 @@
               <div class="form-group row">
                 <label for="sk_materi_id" class="col-sm-3 col-form-label font-weight-bold">Materi Soal <span class="text-danger">*</span></label>
                 <div class="col-sm-9">
-                  <select name="materi_id" id="sk_materi_id" class="form-control">
+                  <select name="materi_id" id="sk_materi_id" class="form-control select2bs4" style="width: 100%;">
                     <option value="" disabled selected>Pilih Materi Soal</option>
-                    <?php if (!empty($materi)) : ?>
-                      <?php foreach ($materi as $key) : ?>
-                        <option value="<?= $key->materi_id ?>"><?= $key->materi_nm ?></option>
-                      <?php endforeach; ?>
-                    <?php endif; ?>
                   </select>
                 </div>
               </div>
@@ -363,6 +359,97 @@
       </div>
   </div>
 
+  <!-- Modal Import Soal -->
+  <div class="modal fade" id="modalImportSoal" tabindex="-1" role="dialog" aria-labelledby="modalImportSoalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="modalImportSoalLabel"><i class="fas fa-file-excel text-success"></i> Import Soal dari Excel</h5>
+          <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+          </button>
+        </div>
+        <form id="formImportSoal" method="POST" enctype="multipart/form-data">
+          <div class="modal-body">
+            <div class="form-group">
+              <label for="import_group_id">Group Soal <span class="text-danger">*</span></label>
+              <select name="group_id" id="import_group_id" class="form-control select2bs4" style="width: 100%;" required>
+                <option value="" disabled selected>Pilih Group Soal</option>
+                <?php foreach ($group as $key) { ?>
+                  <option value="<?= $key->group_soal_id ?>"><?= $key->group_nm ?></option>
+                <?php } ?>
+              </select>
+            </div>
+            <div class="form-group">
+              <label for="import_materi_id">Materi Soal <span class="text-danger">*</span></label>
+              <select name="materi_id" id="import_materi_id" class="form-control select2bs4" style="width: 100%;" required>
+                <option value="" disabled selected>Pilih Materi Soal</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label for="file_excel">File Excel (.xls, .xlsx) <span class="text-danger">*</span></label>
+              <input type="file" name="file_excel" id="file_excel" class="form-control-file" accept=".xls,.xlsx" required>
+            </div>
+            <div class="alert alert-info">
+              <i class="fas fa-info-circle mr-1"></i> Gunakan template Excel terbaru di bawah ini. Kolom <code>kolom_id</code>, <code>clue</code>, dan <code>typesoal</code> dapat diisi sesuai kebutuhan atau boleh dikosongkan.<br>
+              <a href="<?= base_url('admin/soal/downloadTemplate') ?>" class="btn btn-xs btn-success mt-2"><i class="fas fa-download"></i> Download Template Excel</a>
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-dismiss="modal">Batal</button>
+            <button type="submit" class="btn btn-success"><i class="fas fa-upload"></i> Mulai Import</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal Import Soal Sikap Kerja -->
+  <div class="modal fade" id="modalImportSK" tabindex="-1" role="dialog" aria-labelledby="modalImportSKLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="modalImportSKLabel"><i class="fas fa-file-excel text-info"></i> Import Soal Sikap Kerja dari Excel</h5>
+          <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+          </button>
+        </div>
+        <form id="formImportSK" method="POST" enctype="multipart/form-data">
+          <div class="modal-body">
+            <div class="form-group">
+              <label for="import_sk_group_id">Group Soal <span class="text-danger">*</span></label>
+              <select name="group_id" id="import_sk_group_id" class="form-control select2bs4" style="width: 100%;" required>
+                <option value="" disabled selected>Pilih Group Soal</option>
+                <?php foreach ($group as $key) { ?>
+                  <option value="<?= $key->group_soal_id ?>"><?= $key->group_nm ?></option>
+                <?php } ?>
+              </select>
+            </div>
+            <div class="form-group">
+              <label for="import_sk_materi_id">Materi Soal <span class="text-danger">*</span></label>
+              <select name="materi_id" id="import_sk_materi_id" class="form-control select2bs4" style="width: 100%;" required>
+                <option value="" disabled selected>Pilih Materi Soal</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label for="file_excel_sk">File Excel (.xls, .xlsx) <span class="text-danger">*</span></label>
+              <input type="file" name="file_excel" id="file_excel_sk" class="form-control-file" accept=".xls,.xlsx" required>
+            </div>
+            <div class="alert alert-info">
+              <i class="fas fa-info-circle mr-1"></i> <strong>Khusus Sikap Kerja (Kecermatan):</strong><br>
+              <small>Template ini dirancang khusus untuk Sikap Kerja (terdiri dari 6 kolom: <code>no_soal</code>, <code>soal</code>, <code>kunci</code>, <code>clue</code>, <code>kolom_id</code>, <code>typesoal</code>). Opsi jawaban ABCDE akan otomatis disimpan dari nilai clue.</small><br>
+              <a href="<?= base_url('admin/soal/downloadTemplateSK') ?>" class="btn btn-xs btn-info mt-2"><i class="fas fa-download"></i> Download Template Sikap Kerja</a>
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-dismiss="modal">Batal</button>
+            <button type="submit" class="btn btn-info"><i class="fas fa-upload"></i> Mulai Import SK</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
 </div>
 <!-- ./wrapper -->
 
@@ -378,24 +465,278 @@
 <script src="<?= base_url() ?>/plugins/datatables-buttons/js/dataTables.buttons.min.js"></script>
 <script src="<?= base_url() ?>/plugins/datatables-buttons/js/buttons.bootstrap4.min.js"></script>
 <script src="<?= base_url() ?>/plugins/sweetalert2/sweetalert2.js"></script>
+<!-- Select2 -->
+<script src="<?= base_url() ?>/plugins/select2/js/select2.full.min.js"></script>
 <!-- AdminLTE App -->
 <script src="<?= base_url() ?>/dist/dist/js/adminlte.min.js"></script>
 <!-- Page specific script -->
 <script>
-  $(function () {
-    $('#example2').DataTable({
-      "paging": true,
-      "lengthChange": false,
-      "searching": false,
-      "ordering": true,
-      "info": true,
-      "autoWidth": false,
-      "responsive": true,
+  function loadMateri(groupId, targetSelectId, selectedMateriId, callback) {
+    var $select = $(targetSelectId);
+    $select.prop('disabled', true);
+    $select.html('<option value="" disabled selected>Memuat materi...</option>').trigger('change');
+
+    if (!groupId) {
+      $select.html('<option value="" disabled selected>Pilih Materi Soal</option>');
+      $select.prop('disabled', false).trigger('change');
+      if (typeof callback === 'function') callback();
+      return;
+    }
+
+    $.ajax({
+      url: "<?= base_url('soal/getMateriByGroup') ?>",
+      type: "GET",
+      data: { group_id: groupId },
+      dataType: "json",
+      success: function(data) {
+        $select.empty();
+        $select.append('<option value="" disabled ' + (!selectedMateriId ? 'selected' : '') + '>Pilih Materi Soal</option>');
+        if (data && data.length > 0) {
+          $.each(data, function(i, item) {
+            var isSelected = (selectedMateriId && selectedMateriId == item.materi_id) ? 'selected' : '';
+            $select.append('<option value="' + item.materi_id + '" ' + isSelected + '>' + item.materi_nm + '</option>');
+          });
+        } else {
+          $select.append('<option value="" disabled selected>Tidak ada materi untuk group ini</option>');
+        }
+        $select.prop('disabled', false);
+        $select.trigger('change');
+        if (typeof callback === 'function') callback();
+      },
+      error: function() {
+        $select.html('<option value="" disabled selected>Gagal memuat materi</option>');
+        $select.prop('disabled', false).trigger('change');
+        if (typeof callback === 'function') callback();
+      }
     });
+  }
+
+  $(function () {
+    // Inisialisasi Select2 untuk semua select dengan tema Bootstrap 4
+    $('.select2bs4').each(function() {
+      var $modal = $(this).closest('.modal');
+      $(this).select2({
+        theme: 'bootstrap4',
+        width: '100%',
+        dropdownParent: $modal.length ? $modal : $(document.body)
+      });
+    });
+
+    if ($('#example2').length) {
+      $('#example2').DataTable({
+        "paging": true,
+        "lengthChange": false,
+        "searching": true,
+        "ordering": true,
+        "info": true,
+        "autoWidth": false,
+        "responsive": true,
+      });
+    }
 
     $("input[data-bootstrap-switch]").each(function(){
       $(this).bootstrapSwitch('state', $(this).prop('checked'));
-    })
+    });
+
+    // Chaining Group Soal -> Materi Soal pada filter halaman
+    $('#group_id').on('change', function() {
+      var groupId = $(this).val();
+      loadMateri(groupId, '#materi_id');
+    });
+
+    // Chaining Group Soal -> Materi Soal pada Modal Tambah SK
+    $('#sk_group_id').on('change', function() {
+      var groupId = $(this).val();
+      loadMateri(groupId, '#sk_materi_id');
+    });
+
+    // Chaining Group Soal -> Materi Soal pada Modal Import Soal
+    $('#import_group_id').on('change', function() {
+      var groupId = $(this).val();
+      loadMateri(groupId, '#import_materi_id');
+    });
+
+    // Sinkronisasi group pilihan saat Modal Import dibuka
+    $('#modalImportSoal').on('show.bs.modal', function () {
+      var currentGroupId = $('#group_id').val();
+      if (currentGroupId && !$('#import_group_id').val()) {
+        $('#import_group_id').val(currentGroupId).trigger('change');
+        var currentMateriId = $('#materi_id').val();
+        loadMateri(currentGroupId, '#import_materi_id', currentMateriId);
+      }
+    });
+
+    // Reset Modal Import saat ditutup
+    $('#modalImportSoal').on('hidden.bs.modal', function () {
+      $('#formImportSoal')[0].reset();
+      $('#import_group_id').val('').trigger('change');
+      $('#import_materi_id').html('<option value="" disabled selected>Pilih Materi Soal</option>').trigger('change');
+    });
+
+    // Auto-load materi jika group_id sudah terpilih saat pertama kali render (session)
+    var initialGroupId = $('#group_id').val();
+    var sessionMateri = "<?= $this->session->get('materi_filter') ?? $this->session->get('materi_id') ?? '' ?>";
+    if (initialGroupId) {
+      loadMateri(initialGroupId, '#materi_id', sessionMateri, function() {
+        if (sessionMateri) {
+          tampilkansoal();
+        }
+      });
+    }
+
+    var initialSkGroupId = $('#sk_group_id').val();
+    if (initialSkGroupId) {
+      loadMateri(initialSkGroupId, '#sk_materi_id');
+    }
+
+    // Chaining Group Soal -> Materi Soal pada Modal Import SK
+    $('#import_sk_group_id').on('change', function() {
+      var groupId = $(this).val();
+      loadMateri(groupId, '#import_sk_materi_id');
+    });
+
+    // Sinkronisasi group pilihan saat Modal Import SK dibuka
+    $('#modalImportSK').on('show.bs.modal', function () {
+      var currentGroupId = $('#group_id').val();
+      if (currentGroupId && !$('#import_sk_group_id').val()) {
+        $('#import_sk_group_id').val(currentGroupId).trigger('change');
+        var currentMateriId = $('#materi_id').val();
+        loadMateri(currentGroupId, '#import_sk_materi_id', currentMateriId);
+      }
+    });
+
+    // Reset Modal Import SK saat ditutup
+    $('#modalImportSK').on('hidden.bs.modal', function () {
+      $('#formImportSK')[0].reset();
+      $('#import_sk_group_id').val('').trigger('change');
+      $('#import_sk_materi_id').html('<option value="" disabled selected>Pilih Materi Soal</option>').trigger('change');
+    });
+
+    $('#formImportSoal').on('submit', function(e) {
+      e.preventDefault();
+      var formData = new FormData(this);
+      $.ajax({
+        url: "<?= base_url('admin/soal/importExcel') ?>",
+        type: "POST",
+        data: formData,
+        contentType: false,
+        processData: false,
+        beforeSend: function() {
+          $("#loader-wrapper").removeClass("d-none");
+        },
+        success: function(data) {
+          $("#loader-wrapper").addClass("d-none");
+          try {
+            var res = JSON.parse(data);
+            if (res.status === 'success') {
+              var importedGroupId = $("#import_group_id").val();
+              var importedMateriId = $("#import_materi_id").val();
+              $('#modalImportSoal').modal('hide');
+              Swal.fire({
+                icon: 'success',
+                title: 'Berhasil',
+                text: res.message,
+              }).then(() => {
+                if (importedGroupId) {
+                  $("#group_id").val(importedGroupId);
+                  loadMateri(importedGroupId, '#materi_id', importedMateriId, function() {
+                    tampilkansoal();
+                  });
+                } else {
+                  tampilkansoal();
+                }
+                $('#formImportSoal')[0].reset();
+                $('#import_materi_id').html('<option value="" disabled selected>Pilih Materi Soal</option>');
+              });
+            } else {
+              Swal.fire({
+                icon: 'error',
+                title: 'Gagal',
+                text: res.message,
+              });
+            }
+          } catch (e) {
+            Swal.fire({
+              icon: 'error',
+              title: 'Error',
+              text: 'Terjadi kesalahan sistem parsing response.',
+            });
+          }
+        },
+        error: function() {
+          $("#loader-wrapper").addClass("d-none");
+          Swal.fire({
+            icon: 'error',
+            title: 'Error',
+            text: 'Terjadi kesalahan saat mengunggah file.',
+          });
+        }
+      });
+    });
+
+    $('#formImportSK').on('submit', function(e) {
+      e.preventDefault();
+      var formData = new FormData(this);
+      $.ajax({
+        url: "<?= base_url('admin/soal/importExcelSK') ?>",
+        type: "POST",
+        data: formData,
+        contentType: false,
+        processData: false,
+        beforeSend: function() {
+          $("#loader-wrapper").removeClass("d-none");
+        },
+        success: function(data) {
+          $("#loader-wrapper").addClass("d-none");
+          try {
+            var res = JSON.parse(data);
+            if (res.status === 'success') {
+              var importedGroupId = $("#import_sk_group_id").val();
+              var importedMateriId = $("#import_sk_materi_id").val();
+              $('#modalImportSK').modal('hide');
+              Swal.fire({
+                icon: 'success',
+                title: 'Berhasil',
+                text: res.message,
+              }).then(() => {
+                if (importedGroupId) {
+                  $("#group_id").val(importedGroupId);
+                  loadMateri(importedGroupId, '#materi_id', importedMateriId, function() {
+                    tampilkansoal();
+                  });
+                } else {
+                  tampilkansoal();
+                }
+                $('#formImportSK')[0].reset();
+                $('#import_sk_materi_id').html('<option value="" disabled selected>Pilih Materi Soal</option>');
+              });
+            } else {
+              Swal.fire({
+                icon: 'error',
+                title: 'Gagal',
+                text: res.message,
+              });
+            }
+          } catch (e) {
+            Swal.fire({
+              icon: 'error',
+              title: 'Error',
+              text: 'Terjadi kesalahan sistem parsing response.',
+            });
+          }
+        },
+        error: function() {
+          $("#loader-wrapper").addClass("d-none");
+          Swal.fire({
+            icon: 'error',
+            title: 'Error',
+            text: 'Terjadi kesalahan saat mengunggah file.',
+          });
+        }
+      });
+    });
+
+
   });
 
   $('#sk_materi_id').change(function() {
@@ -409,12 +750,60 @@
     }
   });
 
+  function tampilkansoal() {
+    var group_id = $('#group_id').val();
+    var materi = $('#materi_id').val();
+
+    if (!group_id) {
+      alert("Pilih Group Soal terlebih dahulu");
+      return;
+    }
+    if (!materi) {
+      alert("Pilih Materi Soal terlebih dahulu");
+      return;
+    }
+
+    $.ajax({
+      url: "<?= base_url('soal/showsoal') ?>",
+      type: "post",
+      data: {
+        "filter": "filter",
+        "group_id": group_id,
+        "materi": materi,
+      },
+      beforeSend: function() {
+        $("#loader-wrapper").removeClass("d-none");
+      },
+      success: function(data) {
+        $("#loader-wrapper").addClass("d-none");
+        $('#dv_cardbody').html(data);
+        if ($.fn.DataTable.isDataTable('#example2')) {
+          $('#example2').DataTable().destroy();
+        }
+        $('#example2').DataTable({
+          "paging": true,
+          "lengthChange": false,
+          "searching": true,
+          "ordering": true,
+          "info": true,
+          "autoWidth": false,
+          "responsive": true,
+        });
+      },
+      error: function() {
+        $("#loader-wrapper").addClass("d-none");
+        alert("error");
+      }
+    });
+  }
+
   function showsoal(filter) {
-      var group_id = $("input[name='group_filter']:checked").val();
-      var materi = $("input[name='materi_filter']:checked").val();
+      var group_id = $('#group_id').val() || $("input[name='group_filter']:checked").val();
+      var materi = $('#materi_id').val() || $("input[name='materi_filter']:checked").val();
       
       if (materi == undefined && filter == "filter") {
-          
+          alert("Pilih Materi Soal terlebih dahulu");
+          return;
       } else {
         $.ajax({
           url: "<?= base_url('soal/showsoal') ?>",
@@ -425,13 +814,26 @@
             "materi": materi,
           },
           beforeSend: function() {
-            $("#loader-wrapper").removeClass("d-none")
+            $("#loader-wrapper").removeClass("d-none");
           },
           success: function(data) {
             $("#loader-wrapper").addClass("d-none");
             $('#dv_cardbody').html(data);
+            if ($.fn.DataTable.isDataTable('#example2')) {
+              $('#example2').DataTable().destroy();
+            }
+            $('#example2').DataTable({
+              "paging": true,
+              "lengthChange": false,
+              "searching": true,
+              "ordering": true,
+              "info": true,
+              "autoWidth": false,
+              "responsive": true,
+            });
           },
           error: function() {
+            $("#loader-wrapper").addClass("d-none");
             alert("error");
           }
         });
@@ -488,6 +890,10 @@
   function tambahsoallatihan() {
     if (document.getElementById('form_tambah_sk')) {
       document.getElementById('form_tambah_sk').reset();
+      $('#sk_group_id').val('').trigger('change');
+      $('#sk_materi_id').html('<option value="" disabled selected>Pilih Materi Soal</option>').trigger('change');
+      $('#dv_form_text').removeClass('d-none');
+      $('#dv_form_gambar').addClass('d-none');
     }
   }
 

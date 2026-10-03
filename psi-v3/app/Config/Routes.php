@@ -141,6 +141,24 @@ $routes->get('soal/simpansoallatihan', '\App\Controllers\Admin\Soal::simpansoall
 $routes->post('soal/simpansoallatihan', '\App\Controllers\Admin\Soal::simpansoallatihan');
 $routes->get('soal/updatestatus', '\App\Controllers\Admin\Soal::updatestatus');
 $routes->post('soal/updatestatus', '\App\Controllers\Admin\Soal::updatestatus');
+$routes->get('soal/getMateriByGroup', '\App\Controllers\Admin\Soal::getMateriByGroup');
+$routes->post('soal/getMateriByGroup', '\App\Controllers\Admin\Soal::getMateriByGroup');
+$routes->get('admin/soal/getMateriByGroup', '\App\Controllers\Admin\Soal::getMateriByGroup');
+$routes->post('admin/soal/getMateriByGroup', '\App\Controllers\Admin\Soal::getMateriByGroup');
+$routes->get('admin/soal/downloadTemplate', '\App\Controllers\Admin\Soal::downloadTemplate');
+$routes->post('admin/soal/importExcel', '\App\Controllers\Admin\Soal::importExcel');
+$routes->get('admin/soal/downloadTemplateSK', '\App\Controllers\Admin\Soal::downloadTemplateSK');
+$routes->post('admin/soal/importExcelSK', '\App\Controllers\Admin\Soal::importExcelSK');
+
+$routes->get('admin/soalsikapkerjamateri', '\App\Controllers\Admin\Soalsikapkerjamateri::index');
+$routes->post('admin/soalsikapkerjamateri/showkolom', '\App\Controllers\Admin\Soalsikapkerjamateri::showkolom');
+$routes->get('admin/soalsikapkerjamateri/tambahsoalSkMateri/(:any)', '\App\Controllers\Admin\Soalsikapkerjamateri::tambahsoalSkMateri/$1');
+$routes->get('admin/soalsikapkerjamateri/viewEditsoalSkMateri/(:any)', '\App\Controllers\Admin\Soalsikapkerjamateri::viewEditsoalSkMateri/$1');
+$routes->get('admin/soalsikapkerjamateri/detailsoal/(:any)', '\App\Controllers\Admin\Soalsikapkerjamateri::detailsoal/$1');
+$routes->post('admin/soalsikapkerjamateri/updateclue', '\App\Controllers\Admin\Soalsikapkerjamateri::updateclue');
+$routes->post('admin/soalsikapkerjamateri/insertGambarSk', '\App\Controllers\Admin\Soalsikapkerjamateri::insertGambarSk');
+$routes->post('admin/soalsikapkerjamateri/updateGambarSk', '\App\Controllers\Admin\Soalsikapkerjamateri::updateGambarSk');
+$routes->post('admin/soalsikapkerjamateri/updatesoalskmateri', '\App\Controllers\Admin\Soalsikapkerjamateri::updatesoalskmateri');
 
 $routes->get('soallatihan/tambahsoallatihan', '\App\Controllers\Admin\Soallatihan::tambahsoallatihan');
 $routes->post('soallatihan/tambahsoallatihan', '\App\Controllers\Admin\Soallatihan::tambahsoallatihan');

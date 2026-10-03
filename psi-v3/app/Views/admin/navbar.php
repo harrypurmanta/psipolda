@@ -25,6 +25,9 @@ $this->session = \Config\Services::session();
                       </li>";
               }
           ?>  
+          <li class="nav-item">
+            <a href="<?= base_url() ?>/admin/soalsikapkerjamateri" class="nav-link" style="color:#ffffff;">SK Materi</a>
+          </li>  
           
           
           <li class="nav-item">
