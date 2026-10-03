@@ -200,70 +200,170 @@ class Soalsikapkerjamateri extends BaseController
         $group_id = self::GROUP_ID;
         $materi_id = self::MATERI_ID;
         $sk_group_id = self::SK_GROUP_ID;
-        $allowedMime = ['image/png', 'image/jpg', 'image/jpeg'];
+        $allowedMime = ['image/png', 'image/jpg', 'image/jpeg', 'image/webp'];
+        $supportedExtensions = ['png', 'jpg', 'jpeg', 'webp', 'gif'];
 
         $path = FCPATH . "images/soalskmateri/materi/$materi_id/kolom/$kolom_id";
         if (!is_dir($path)) {
             mkdir($path, 0777, true);
         }
 
+        // Helper untuk safe unlink (terutama untuk OS Windows guna mencegah "Resource temporarily unavailable")
+        $safeUnlink = function($filePath) {
+            clearstatcache(true, $filePath);
+            if (file_exists($filePath) && is_file($filePath)) {
+                try {
+                    if (!@unlink($filePath)) {
+                        // Jika unlink gagal karena file terkunci (locked resource), coba rename dulu lalu unlink
+                        $tempPath = $filePath . '.del_' . uniqid() . '.tmp';
+                        if (@rename($filePath, $tempPath)) {
+                            @unlink($tempPath);
+                            return true;
+                        }
+                        return false;
+                    }
+                    return true;
+                } catch (\Throwable $e) {
+                    return false;
+                }
+            }
+            return false;
+        };
+
+        // Parse array nama file lama jika ada
+        $jawaban_lama_arr = [];
+        if (!empty($jawaban_nm_lama)) {
+            $jawaban_lama_arr = explode('|', $jawaban_nm_lama);
+        }
+
+        // Helper untuk mencari file gambar yang sudah ada dengan berbagai ekstensi
+        $findExistingFile = function($prefix, $expectedName = '') use ($path, $supportedExtensions) {
+            if (!empty($expectedName)) {
+                $expectedPath = $path . '/' . $expectedName;
+                clearstatcache(true, $expectedPath);
+                if (file_exists($expectedPath) && is_file($expectedPath)) {
+                    return $expectedName;
+                }
+            }
+
+            foreach ($supportedExtensions as $ext) {
+                $candidate = $prefix . '.' . $ext;
+                $candPath = $path . '/' . $candidate;
+                clearstatcache(true, $candPath);
+                if (file_exists($candPath) && is_file($candPath)) {
+                    return $candidate;
+                }
+            }
+
+            $matches = glob($path . '/' . $prefix . '.*');
+            if (!empty($matches)) {
+                foreach ($matches as $match) {
+                    if (is_file($match)) {
+                        return basename($match);
+                    }
+                }
+            }
+
+            return null;
+        };
+
         $soal_nm = [];
-        $uploadedFiles = [];
+        $missingImages = [];
         $pilihanArr = ['A', 'B', 'C', 'D', 'E'];
 
         for ($i = 1; $i <= 5; $i++) {
-            $file = $this->request->getFile('gambarsk' . $i);
-            if (!$file || !$file->isValid()) {
-                continue;
-            }
-
-            if (!in_array($file->getMimeType(), $allowedMime)) {
-                return $this->response->setJSON([
-                    'status' => false,
-                    'message' => 'Hanya gambar diperbolehkan (gambarsk' . $i . ')'
-                ]);
-            }
-
             $pilihan = $pilihanArr[$i - 1];
-            $newName = $i . $pilihan . '_' . $materi_id . '_' . $kolom_id . '.' . $file->getExtension();
-            $fullPath = $path . '/' . $newName;
+            $prefix = $i . $pilihan . '_' . $materi_id . '_' . $kolom_id;
+            $oldExpectedName = $jawaban_lama_arr[$i - 1] ?? '';
 
-            if (file_exists($fullPath)) {
-                unlink($fullPath);
-            }
+            $file = $this->request->getFile('gambarsk' . $i);
+            $isUploaded = ($file && $file->isValid() && !$file->hasMoved());
 
-            if ($file->move($path, $newName)) {
-                $uploadedFiles[] = $newName;
-                $soal_nm[] = $newName;
+            if ($isUploaded) {
+                if (!in_array($file->getMimeType(), $allowedMime)) {
+                    return $this->response->setJSON([
+                        'status' => false,
+                        'message' => 'Hanya gambar (PNG/JPG/JPEG/WEBP) yang diperbolehkan untuk pilihan ' . $pilihan . ' (gambarsk' . $i . ')'
+                    ]);
+                }
+
+                $ext = strtolower($file->getExtension());
+                $newName = $prefix . '.' . $ext;
+                $destPath = $path . '/' . $newName;
+
+                // Cari dan bersihkan file-file lama dengan prefix ini (cek berbagai ekstensi gambar sebelum unlink)
+                $oldFilesToDelete = [];
+                if (!empty($oldExpectedName)) {
+                    $pOld = $path . '/' . $oldExpectedName;
+                    if (file_exists($pOld) && is_file($pOld)) {
+                        $oldFilesToDelete[$pOld] = $pOld;
+                    }
+                }
+                foreach ($supportedExtensions as $checkExt) {
+                    $pCheck = $path . '/' . $prefix . '.' . $checkExt;
+                    if (file_exists($pCheck) && is_file($pCheck)) {
+                        $oldFilesToDelete[$pCheck] = $pCheck;
+                    }
+                }
+                $globMatches = glob($path . '/' . $prefix . '.*');
+                if (!empty($globMatches)) {
+                    foreach ($globMatches as $gm) {
+                        if (is_file($gm)) {
+                            $oldFilesToDelete[$gm] = $gm;
+                        }
+                    }
+                }
+
+                // Hapus file lama yang berbeda nama dari newName
+                foreach ($oldFilesToDelete as $oldFile) {
+                    if (basename($oldFile) !== $newName) {
+                        $safeUnlink($oldFile);
+                    }
+                }
+
+                // Jika file dengan nama $newName sudah ada, coba safe unlink dulu
+                if (file_exists($destPath)) {
+                    $safeUnlink($destPath);
+                }
+
+                try {
+                    // move dengan overwrite = true
+                    if ($file->move($path, $newName, true)) {
+                        $soal_nm[$i - 1] = $newName;
+                    } else {
+                        return $this->response->setJSON([
+                            'status' => false,
+                            'message' => 'Gagal upload gambar ' . $pilihan . ': ' . $file->getErrorString()
+                        ]);
+                    }
+                } catch (\Throwable $e) {
+                    return $this->response->setJSON([
+                        'status' => false,
+                        'message' => 'Gagal menyimpan gambar ' . $pilihan . ': ' . $e->getMessage()
+                    ]);
+                }
             } else {
-                return $this->response->setJSON([
-                    'status' => false,
-                    'message' => $file->getErrorString()
-                ]);
-            }
-        }
-
-        if (count($uploadedFiles) < 5) {
-            // Check if existing images already present
-            $existingImages = [];
-            for ($i = 1; $i <= 5; $i++) {
-                $pilihan = $pilihanArr[$i - 1];
-                $pattern = $path . '/' . $i . $pilihan . '_' . $materi_id . '_' . $kolom_id . '.*';
-                $matches = glob($pattern);
-                if (!empty($matches)) {
-                    $existingImages[] = basename($matches[0]);
+                // Tidak ada file baru yang diupload, cek apakah file lama ada atau tidak di server
+                // Cek dengan ekstensi gambar lain
+                $existingFile = $findExistingFile($prefix, $oldExpectedName);
+                if ($existingFile) {
+                    $soal_nm[$i - 1] = $existingFile;
+                } else {
+                    // Jika tidak ada di respon
+                    $missingImages[] = "Pilihan $pilihan (gambarsk$i)";
                 }
             }
-            if (count($existingImages) == 5) {
-                $soal_nm = $existingImages;
-            } else {
-                return $this->response->setJSON([
-                    'status' => false,
-                    'message' => 'Harap upload kelima gambar A, B, C, D, E'
-                ]);
-            }
         }
 
+        // Jika ada gambar yang tidak ada (belum diupload dan file lama tidak ditemukan), kembalikan respon
+        if (!empty($missingImages) || count($soal_nm) < 5) {
+            return $this->response->setJSON([
+                'status' => false,
+                'message' => 'File gambar tidak ditemukan untuk: ' . implode(', ', $missingImages) . '. Harap upload gambar untuk pilihan tersebut.'
+            ]);
+        }
+
+        ksort($soal_nm);
         $soal_nm_str = implode('|', $soal_nm);
         $soalList = $this->SoalmodelSKMateri->getSoalByIdSK($kolom_id, $group_id, $materi_id, $sk_group_id)->getResult();
 

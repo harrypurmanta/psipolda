@@ -227,7 +227,7 @@ $request = \Config\Services::request();
                     $("#dv_soal").html("");
                     countdown(6,kolom_id,data.ret);
                 } else if (data.ret == "selesai") {
-                    window.location.href = "<?= base_url() ?>/materiN/hasiltryout/" + materi;
+                    window.location.href = "<?= base_url() ?>/materiN/hasiltryout/" + materi + "/<?= $request->uri->getSegment(3) ?>";
                 } else if (data == "soal_tidak_ada") {
                     alert("Soal tidak ada");
                 } else {

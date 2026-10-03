@@ -202,6 +202,9 @@ $routes->get('tryout/ujian/(:segment)/(:segment)', 'Tryout::ujian/$1/$2');
 $routes->get('tryout/sikapkerja/(:segment)/(:segment)', 'Tryout::sikapkerja/$1/$2');
 // $routes->get('tryout/hasiltryout/(:segment)', 'Tryout::hasiltryout/$1');
 $routes->get('tryout/hasiltryout/(:segment)', '\App\Controllers\Tryout::hasiltryout/$1');
+$routes->get('materiN/hasiltryout/(:segment)/(:segment)', '\App\Controllers\MateriN::hasiltryout/$1/$2');
+$routes->get('materiN/hasiltryout/(:segment)', '\App\Controllers\MateriN::hasiltryout/$1');
+$routes->get('materiN/hasiltryout', '\App\Controllers\MateriN::hasiltryout');
 
 
 

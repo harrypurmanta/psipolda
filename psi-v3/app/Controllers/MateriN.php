@@ -291,9 +291,9 @@ class MateriN extends BaseController
 
         if ($proc == "persiapan") {
             echo json_encode(array("ret"=>"persiapan", "kolom"=>$kolom_id));
-        } else if ($no_soal == 51 && $group_id == 21 && $kolom_id <= 10) {
+        } else if ($no_soal == 51 && $materi == 21 && $kolom_id <= 10) {
             echo json_encode(array("ret"=>"persiapan", "kolom"=>$kolom_id));
-        } else if ($group_id == 21 && $kolom_id == 11) {
+        } else if ($materi == 21 && $kolom_id == 11) {
             echo json_encode(array("ret"=>"selesai"));
         } else {
             $res = $this->soalmodel->getSoal($no_soal,$group_id,$materi,$kolom_id)->getResult();
@@ -395,13 +395,298 @@ class MateriN extends BaseController
         }
     }
 
-    public function hasiltryout() {
+    public function hasiltryout($materi_param = null, $group_param = null) {
+        if ($this->session->get("user_nm") == "" && empty($this->session->get("user_id"))) {
+            return redirect('/');
+        }
+
         $request = \Config\Services::request();
-        $user_id = $this->session->user_id;
-        $materi_id = $request->uri->getSegment(3);
-        $group_id = $request->uri->getSegment(4);
-        
-        return view('front/materiN/hasiltryout');
+        $user_id = $this->session->get("user_id") ?? $this->session->user_id;
+        $materi_id = $materi_param ?? $request->uri->getSegment(3);
+        $group_id = $group_param ?? $request->uri->getSegment(4);
+
+        $db = \Config\Database::connect();
+
+        // Cari group_id jika tidak ada di URL
+        if (empty($group_id)) {
+            $last_resp = $db->table('respon')
+                ->where('created_user_id', $user_id)
+                ->whereIn('materi', [19, 20, 21])
+                ->orderBy('respon_id', 'DESC')
+                ->get()
+                ->getRow();
+            if ($last_resp && !empty($last_resp->group_id)) {
+                $group_id = $last_resp->group_id;
+            } else {
+                $group_id = 14;
+            }
+        }
+
+        // Ambil info group
+        $group_row = $db->table('group_soal')->where('group_soal_id', $group_id)->get()->getRow();
+        $group_nm = $group_row ? $group_row->group_nm : "Group " . $group_id;
+
+        // Ambil materi untuk materiN (19: Kecerdasan, 20: Kepribadian, 21: Sikap Kerja)
+        $materi_rows = $db->table('materi')->whereIn('materi_id', [19, 20, 21])->get()->getResult();
+        $id_kecerdasan = 19;
+        $id_kepribadian = 20;
+        $id_sikapkerja = 21;
+        $nm_kecerdasan = "Kecerdasan";
+        $nm_kepribadian = "Kepribadian";
+        $nm_sikapkerja = "Sikap Kerja";
+
+        foreach ($materi_rows as $mr) {
+            $nm = strtolower($mr->materi_nm);
+            if (strpos($nm, 'kecerdasan') !== false) {
+                $id_kecerdasan = $mr->materi_id;
+                $nm_kecerdasan = $mr->materi_nm;
+            } else if (strpos($nm, 'kepribadian') !== false) {
+                $id_kepribadian = $mr->materi_id;
+                $nm_kepribadian = $mr->materi_nm;
+            } else if (strpos($nm, 'sikap') !== false) {
+                $id_sikapkerja = $mr->materi_id;
+                $nm_sikapkerja = $mr->materi_nm;
+            }
+        }
+
+        // 1. KECERDASAN
+        $subquery_kec = $db->table('respon')
+            ->select('MAX(respon_id) as max_id')
+            ->where('created_user_id', $user_id)
+            ->where('materi', $id_kecerdasan);
+        if (!empty($group_id)) {
+            $subquery_kec->where('group_id', $group_id);
+        }
+        $subquery_kec->groupBy('soal_id');
+        $max_ids_kec = array_column($subquery_kec->get()->getResultArray(), 'max_id');
+
+        $respon_kec = [];
+        if (!empty($max_ids_kec)) {
+            $respon_kec = $db->table('respon a')
+                ->select('a.soal_id, a.pilihan_nm, c.kunci')
+                ->join('soal c', 'c.soal_id = a.soal_id', 'left')
+                ->whereIn('a.respon_id', $max_ids_kec)
+                ->get()
+                ->getResult();
+        } else {
+            $subquery_kec_fb = $db->table('respon')
+                ->select('MAX(respon_id) as max_id')
+                ->where('created_user_id', $user_id)
+                ->where('materi', $id_kecerdasan)
+                ->groupBy('soal_id');
+            $max_ids_kec_fb = array_column($subquery_kec_fb->get()->getResultArray(), 'max_id');
+            if (!empty($max_ids_kec_fb)) {
+                $respon_kec = $db->table('respon a')
+                    ->select('a.soal_id, a.pilihan_nm, c.kunci')
+                    ->join('soal c', 'c.soal_id = a.soal_id', 'left')
+                    ->whereIn('a.respon_id', $max_ids_kec_fb)
+                    ->get()
+                    ->getResult();
+            }
+        }
+
+        $terjawab_kec = 0;
+        $benar_kec = 0;
+        $salah_kec = 0;
+
+        foreach ($respon_kec as $rk) {
+            if (!empty($rk->pilihan_nm) && $rk->pilihan_nm !== 'null') {
+                $terjawab_kec++;
+                if (!empty($rk->kunci) && trim(strtoupper($rk->pilihan_nm)) === trim(strtoupper($rk->kunci))) {
+                    $benar_kec++;
+                } else {
+                    $salah_kec++;
+                }
+            }
+        }
+
+        // 2. KEPRIBADIAN
+        $subquery_kep = $db->table('respon')
+            ->select('MAX(respon_id) as max_id')
+            ->where('created_user_id', $user_id)
+            ->where('materi', $id_kepribadian);
+        if (!empty($group_id)) {
+            $subquery_kep->where('group_id', $group_id);
+        }
+        $subquery_kep->groupBy('soal_id');
+        $max_ids_kep = array_column($subquery_kep->get()->getResultArray(), 'max_id');
+
+        $respon_kep = [];
+        if (!empty($max_ids_kep)) {
+            $respon_kep = $db->table('respon a')
+                ->select('a.soal_id, a.pilihan_nm, c.kunci')
+                ->join('soal c', 'c.soal_id = a.soal_id', 'left')
+                ->whereIn('a.respon_id', $max_ids_kep)
+                ->get()
+                ->getResult();
+        } else {
+            $subquery_kep_fb = $db->table('respon')
+                ->select('MAX(respon_id) as max_id')
+                ->where('created_user_id', $user_id)
+                ->where('materi', $id_kepribadian)
+                ->groupBy('soal_id');
+            $max_ids_kep_fb = array_column($subquery_kep_fb->get()->getResultArray(), 'max_id');
+            if (!empty($max_ids_kep_fb)) {
+                $respon_kep = $db->table('respon a')
+                    ->select('a.soal_id, a.pilihan_nm, c.kunci')
+                    ->join('soal c', 'c.soal_id = a.soal_id', 'left')
+                    ->whereIn('a.respon_id', $max_ids_kep_fb)
+                    ->get()
+                    ->getResult();
+            }
+        }
+
+        $terjawab_kep = 0;
+        $benar_kep = 0;
+        $salah_kep = 0;
+
+        foreach ($respon_kep as $rkp) {
+            if (!empty($rkp->pilihan_nm) && $rkp->pilihan_nm !== 'null') {
+                $terjawab_kep++;
+                if (!empty($rkp->kunci) && trim(strtoupper($rkp->pilihan_nm)) === trim(strtoupper($rkp->kunci))) {
+                    $benar_kep++;
+                } else {
+                    $salah_kep++;
+                }
+            }
+        }
+
+        // 3. SIKAP KERJA (Per Kolom)
+        $kolom_list = $db->table('soal a')
+            ->select('a.kolom_id, COALESCE(b.kolom_nm, CONCAT("Kolom ", a.kolom_id)) as kolom_nm')
+            ->join('kolom_soal b', 'b.kolom_id = a.kolom_id', 'left')
+            ->where('a.materi', $id_sikapkerja)
+            ->where('a.status_cd', 'normal')
+            ->groupBy('a.kolom_id')
+            ->orderBy('a.kolom_id', 'ASC')
+            ->get()
+            ->getResult();
+
+        if (empty($kolom_list)) {
+            $kolom_list = $db->table('kolom_soal')
+                ->select('kolom_id, kolom_nm')
+                ->orderBy('kolom_id', 'ASC')
+                ->get()
+                ->getResult();
+        }
+
+        if (empty($kolom_list)) {
+            $kolom_list = [];
+            for ($i = 1; $i <= 10; $i++) {
+                $kolom_list[] = (object)[
+                    'kolom_id' => $i,
+                    'kolom_nm' => "Kolom " . $i
+                ];
+            }
+        }
+
+        $hasil_sikap_kerja = [];
+        $total_sk_terjawab = 0;
+        $total_sk_benar = 0;
+        $total_sk_salah = 0;
+        $chart_labels = [];
+        $chart_terjawab = [];
+        $chart_benar = [];
+        $chart_salah = [];
+
+        foreach ($kolom_list as $klm) {
+            $kolom_id = $klm->kolom_id;
+            $kolom_nm = !empty($klm->kolom_nm) ? $klm->kolom_nm : "Kolom " . $kolom_id;
+
+            $subquery_sk = $db->table('respon')
+                ->select('MAX(respon_id) as max_id')
+                ->where('created_user_id', $user_id)
+                ->where('materi', $id_sikapkerja)
+                ->where('kolom_id', $kolom_id);
+            if (!empty($group_id)) {
+                $subquery_sk->where('group_id', $group_id);
+            }
+            $subquery_sk->groupBy('soal_id');
+            $max_ids_sk = array_column($subquery_sk->get()->getResultArray(), 'max_id');
+
+            $respon_sk = [];
+            if (!empty($max_ids_sk)) {
+                $respon_sk = $db->table('respon a')
+                    ->select('a.pilihan_nm, c.kunci')
+                    ->join('soal c', 'c.soal_id = a.soal_id', 'left')
+                    ->whereIn('a.respon_id', $max_ids_sk)
+                    ->get()
+                    ->getResult();
+            } else {
+                $subquery_sk_fb = $db->table('respon')
+                    ->select('MAX(respon_id) as max_id')
+                    ->where('created_user_id', $user_id)
+                    ->where('materi', $id_sikapkerja)
+                    ->where('kolom_id', $kolom_id)
+                    ->groupBy('soal_id');
+                $max_ids_sk_fb = array_column($subquery_sk_fb->get()->getResultArray(), 'max_id');
+                if (!empty($max_ids_sk_fb)) {
+                    $respon_sk = $db->table('respon a')
+                        ->select('a.pilihan_nm, c.kunci')
+                        ->join('soal c', 'c.soal_id = a.soal_id', 'left')
+                        ->whereIn('a.respon_id', $max_ids_sk_fb)
+                        ->get()
+                        ->getResult();
+                }
+            }
+
+            $terjawab_klm = 0;
+            $benar_klm = 0;
+            $salah_klm = 0;
+
+            foreach ($respon_sk as $r) {
+                if (!empty($r->pilihan_nm) && $r->pilihan_nm !== 'null') {
+                    $terjawab_klm++;
+                    if (!empty($r->kunci) && trim(strtoupper($r->pilihan_nm)) === trim(strtoupper($r->kunci))) {
+                        $benar_klm++;
+                    } else {
+                        $salah_klm++;
+                    }
+                }
+            }
+
+            $total_sk_terjawab += $terjawab_klm;
+            $total_sk_benar += $benar_klm;
+            $total_sk_salah += $salah_klm;
+
+            $chart_labels[] = $kolom_nm;
+            $chart_terjawab[] = $terjawab_klm;
+            $chart_benar[] = $benar_klm;
+            $chart_salah[] = $salah_klm;
+
+            $hasil_sikap_kerja[] = (object)[
+                'kolom_id' => $kolom_id,
+                'kolom_nm' => $kolom_nm,
+                'terjawab' => $terjawab_klm,
+                'benar'    => $benar_klm,
+                'salah'    => $salah_klm
+            ];
+        }
+
+        $data = [
+            'materi_id'          => $materi_id,
+            'group_id'           => $group_id,
+            'group_nm'           => $group_nm,
+            'nm_kecerdasan'      => $nm_kecerdasan,
+            'terjawab_kec'       => $terjawab_kec,
+            'benar_kec'          => $benar_kec,
+            'salah_kec'          => $salah_kec,
+            'nm_kepribadian'     => $nm_kepribadian,
+            'terjawab_kep'       => $terjawab_kep,
+            'benar_kep'          => $benar_kep,
+            'salah_kep'          => $salah_kep,
+            'nm_sikapkerja'      => $nm_sikapkerja,
+            'hasil_sikap_kerja'  => $hasil_sikap_kerja,
+            'total_sk_terjawab'  => $total_sk_terjawab,
+            'total_sk_benar'     => $total_sk_benar,
+            'total_sk_salah'     => $total_sk_salah,
+            'chart_labels'       => $chart_labels,
+            'chart_terjawab'     => $chart_terjawab,
+            'chart_benar'        => $chart_benar,
+            'chart_salah'        => $chart_salah,
+        ];
+
+        return view('front/materiN/hasiltryout', $data);
     }
 
 }
