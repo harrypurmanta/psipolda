@@ -663,22 +663,35 @@ if (!isset($materi_nm) || empty($materi_nm)) {
                         confirmButtonText: 'OK'
                     });
                 } else if (data.proc === "selesai") {
-                    updateFinishRespon(materi, group_id);
-                    Swal.fire({
-                        title: "Tes Selesai",
-                        text: "Anda telah menyelesaikan tes ini.",
-                        icon: "success",
-                        confirmButtonColor: "#3085d6",
-                        confirmButtonText: "Lihat Hasil"
-                    }).then((result) => {
-                        window.location.href = "<?= base_url() ?>/materiN/hasiltryout/" + materi + "/" + group_id;
-                    });
+                    let mtri = materi + 1;
+                    if (mtri == 22) {
+                        updateFinishRespon(group_id, mtri);
+                        Swal.fire({
+                            title: "Tes Selesai",
+                            text: "Anda telah menyelesaikan tes ini.",
+                            icon: "success",
+                            confirmButtonColor: "#3085d6",
+                            confirmButtonText: "Lihat Hasil"
+                        }).then((result) => {
+                            window.location.href = "<?= base_url() ?>/materiN/hasiltryout/" + materi + "/" + group_id;
+                        });
+                    }else{
+                        window.location.href = "<?= base_url() ?>/materiN/petunjukmaterin/" + mtri + "/" + group_id;
+                    }
+
                 } else {
                     if (!timerStarted) {
                         timerStarted = true;
-                        window.clearInterval(timers);
-                        let durasi = (data.durasi) ? data.durasi : 5400;
-                        countdown(durasi);
+                        if (data.materi == 19 && data.no_soal == 1) {
+                            window.clearInterval(timers);
+                            countdown(5400);
+                        } else if (data.materi == 20 && data.no_soal == 1) {
+                            window.clearInterval(timers);
+                            countdown(2700);
+                        } else if (data.materi == 21 && data.no_soal == 1) {
+                            window.clearInterval(timers);
+                            countdown(60);
+                        }
                     }
 
                     $("#inp_soal_id").val(data.soal_id);

@@ -18,111 +18,111 @@ $request = \Config\Services::request();
     <link rel="stylesheet"
         href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,600,700,300italic,400italic,600italic">
     <style>
-    .d-none {
-        display: none !important;
-    }
-
-    #loader-wrapper {
-        display: flex;
-        position: fixed;
-        z-index: 1060;
-        top: 0;
-        right: 0;
-        bottom: 0;
-        left: 0;
-        flex-direction: row;
-        align-items: center;
-        justify-content: center;
-        padding: 0.625em;
-        overflow-x: hidden;
-        transition: background-color 0.1s;
-        background-color: rgb(253 253 253 / 58%);
-        -webkit-overflow-scrolling: touch;
-    }
-
-    .loader {
-        border: 10px solid #f3f3f3;
-        border-radius: 50%;
-        border-top: 10px solid #3af3f5;
-        border-bottom: 10px solid #3abcec;
-        width: 50px;
-        height: 50px;
-        -webkit-animation: spin 2s linear infinite;
-        animation: spin 2s linear infinite;
-        margin: 1.75rem auto;
-    }
-
-
-
-    @keyframes fadeIn {
-        0% {
-            opacity: 0;
+        .d-none {
+            display: none !important;
         }
 
-        100% {
-            opacity: 1;
-        }
-    }
-
-    @-moz-keyframes fadeIn {
-        0% {
-            opacity: 0;
-        }
-
-        100% {
-            opacity: 1;
-        }
-    }
-
-    @-webkit-keyframes fadeIn {
-        0% {
-            opacity: 0;
+        #loader-wrapper {
+            display: flex;
+            position: fixed;
+            z-index: 1060;
+            top: 0;
+            right: 0;
+            bottom: 0;
+            left: 0;
+            flex-direction: row;
+            align-items: center;
+            justify-content: center;
+            padding: 0.625em;
+            overflow-x: hidden;
+            transition: background-color 0.1s;
+            background-color: rgb(253 253 253 / 58%);
+            -webkit-overflow-scrolling: touch;
         }
 
-        100% {
-            opacity: 1;
-        }
-    }
-
-    @-o-keyframes fadeIn {
-        0% {
-            opacity: 0;
-        }
-
-        100% {
-            opacity: 1;
-        }
-    }
-
-    @-ms-keyframes fadeIn {
-        0% {
-            opacity: 0;
+        .loader {
+            border: 10px solid #f3f3f3;
+            border-radius: 50%;
+            border-top: 10px solid #3af3f5;
+            border-bottom: 10px solid #3abcec;
+            width: 50px;
+            height: 50px;
+            -webkit-animation: spin 2s linear infinite;
+            animation: spin 2s linear infinite;
+            margin: 1.75rem auto;
         }
 
-        100% {
-            opacity: 1;
-        }
-    }
 
-    @-webkit-keyframes spin {
-        0% {
-            -webkit-transform: rotate(0deg);
-        }
 
-        100% {
-            -webkit-transform: rotate(360deg);
-        }
-    }
+        @keyframes fadeIn {
+            0% {
+                opacity: 0;
+            }
 
-    @keyframes spin {
-        0% {
-            transform: rotate(0deg);
+            100% {
+                opacity: 1;
+            }
         }
 
-        100% {
-            transform: rotate(360deg);
+        @-moz-keyframes fadeIn {
+            0% {
+                opacity: 0;
+            }
+
+            100% {
+                opacity: 1;
+            }
         }
-    }
+
+        @-webkit-keyframes fadeIn {
+            0% {
+                opacity: 0;
+            }
+
+            100% {
+                opacity: 1;
+            }
+        }
+
+        @-o-keyframes fadeIn {
+            0% {
+                opacity: 0;
+            }
+
+            100% {
+                opacity: 1;
+            }
+        }
+
+        @-ms-keyframes fadeIn {
+            0% {
+                opacity: 0;
+            }
+
+            100% {
+                opacity: 1;
+            }
+        }
+
+        @-webkit-keyframes spin {
+            0% {
+                -webkit-transform: rotate(0deg);
+            }
+
+            100% {
+                -webkit-transform: rotate(360deg);
+            }
+        }
+
+        @keyframes spin {
+            0% {
+                transform: rotate(0deg);
+            }
+
+            100% {
+                transform: rotate(360deg);
+            }
+        }
     </style>
 </head>
 
@@ -141,11 +141,11 @@ $request = \Config\Services::request();
                                     <label for="">Tahapan Ujian</label>
                                 </div>
                                 <input type="hidden" id="inp_group_id">
-                                <?php foreach ($group as $key) {
+                                <?php foreach ($materi as $key) {
                                     echo "<div class='col-lg-3' style='width: 20%;border-radius:10px;'>
-                                                <div class='small-box ".($request->uri->getSegment(4) == $key->group_soal_id? 'bg-green':'')."' style='border-radius:10px;border:1px solid green;'>
+                                                <div class='small-box ".($request->uri->getSegment(4) == $key->materi_id? 'bg-green':'')."' style='border-radius:10px;border:1px solid green;'>
                                                     <div class='inner text-center'>
-                                                    " . $key->group_nm . "
+                                                    " . $key->materi_nm . "
                                                     </div>
                                                 </div>
                                             </div>";
@@ -192,25 +192,25 @@ $request = \Config\Services::request();
     var timers;
     $(document).ready(function() {
         setTimeout(() => {
-            startujian("start","","","",<?= $request->uri->getSegment(4) ?>,0,1,<?= $request->uri->getSegment(3) ?>);
+            startujian("start","","","",<?= $request->uri->getSegment(3) ?>,0,1,<?= $request->uri->getSegment(4) ?>);
         }, 1000);
     });
 
 
     function startujian(proc,pilihan_nm,jawaban_id,soal_id,group_id,no_soal,kolom_id,materi) {
         $.ajax({
-            url: "<?= base_url('tryout/sikapkerjaujian') ?>",
+            url: "<?= base_url('materiN/sikapkerjaujian') ?>",
             type: "post",
             dataType: "json",
             data: {
                 "proc": proc,
                 "jawaban_id": jawaban_id,
                 "soal_id": soal_id,
-                "group_id": <?= $request->uri->getSegment(4) ?>,
+                "group_id": <?= $request->uri->getSegment(3) ?>,
                 "no_soal": no_soal,
                 "pilihan_nm": pilihan_nm,
                 "kolom_id": kolom_id,
-                "materi": <?= $request->uri->getSegment(3) ?>
+                "materi": <?= $request->uri->getSegment(4) ?>
             },
             beforeSend: function() {
                 // $("#loader-wrapper").removeClass("d-none")
@@ -227,7 +227,7 @@ $request = \Config\Services::request();
                     $("#dv_soal").html("");
                     countdown(6,kolom_id,data.ret);
                 } else if (data.ret == "selesai") {
-                    window.location.href = "<?= base_url() ?>/tryout/hasiltryout/" + materi;
+                    window.location.href = "<?= base_url() ?>/materiN/hasiltryout/" + materi;
                 } else if (data == "soal_tidak_ada") {
                     alert("Soal tidak ada");
                 } else {

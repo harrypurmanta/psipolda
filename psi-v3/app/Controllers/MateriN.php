@@ -181,7 +181,7 @@ class MateriN extends BaseController
                          ->select('soal_id, pilihan_nm')
                          ->where('group_id', $group_id)
                          ->where('created_user_id', $this->session->user_id)
-                         ->where('status_cd', 'normal')
+                         ->whereIn('status_cd', ['normal', 'finish'])
                          ->where('materi', $materi)
                          ->get()
                          ->getResult();
@@ -251,7 +251,7 @@ class MateriN extends BaseController
 
     public function sikapkerja() {
         $request = \Config\Services::request();
-        $data['group'] = $this->soalmodel->getGroup()->getResult();
+        $data['materi'] = $this->soalmodel->getMateriById(21)->getResult();
         $materi_id = $request->uri->getSegment(4);
         $group_id = $request->uri->getSegment(3);
         return view('front/sikapkerja',$data);
@@ -291,9 +291,9 @@ class MateriN extends BaseController
 
         if ($proc == "persiapan") {
             echo json_encode(array("ret"=>"persiapan", "kolom"=>$kolom_id));
-        } else if ($no_soal == 51 && $group_id == 4 && $kolom_id <= 10) {
+        } else if ($no_soal == 51 && $group_id == 21 && $kolom_id <= 10) {
             echo json_encode(array("ret"=>"persiapan", "kolom"=>$kolom_id));
-        } else if ($group_id == 4 && $kolom_id == 11) {
+        } else if ($group_id == 21 && $kolom_id == 11) {
             echo json_encode(array("ret"=>"selesai"));
         } else {
             $res = $this->soalmodel->getSoal($no_soal,$group_id,$materi,$kolom_id)->getResult();
@@ -302,13 +302,32 @@ class MateriN extends BaseController
                     <table border='0' style='margin: 0 auto;'>
                         <tbody>
                             <tr style='font-size:75px;font-weight:bold;text-align:center;'>";
-                            $getjawaban = $this->soalmodel->getjawaban($res[0]->soal_id)->getResult();
+                            if ($res[0]->typesoal == "gambar") {
+                                $getjawaban = $this->soalmodel->getjawaban($res[0]->soal_id)->getResult();
+                                foreach ($getjawaban as $key) {
+                                    $jawaban_nm = explode('|', $key->jawaban_nm);
+                                    foreach ($jawaban_nm as $jwb_nm) {
+                                        $src = base_url("images/soalskmateri/materi/$materi/kolom/$kolom_id/$jwb_nm");
+                                        $ret .= "<td width='70'><img src='$src' style='height: 100px; width: 100px; margin: 5px;'></td>";
+                                    }
+                                }
+                            } else {
+                                $getjawaban = $this->soalmodel->getjawaban($res[0]->soal_id)->getResult();
                                 foreach ($getjawaban as $key) {
                                     $jawaban_nm = str_split($key->jawaban_nm,1);
                                     foreach ($jawaban_nm as $jwb_nm) {
                                         $ret .= "<td width='70'>$jwb_nm</td>";
                                     }
                                 }
+                            }
+
+                            // $getjawaban = $this->soalmodel->getjawaban($res[0]->soal_id)->getResult();
+                            //     foreach ($getjawaban as $key) {
+                            //         $jawaban_nm = str_split($key->jawaban_nm,1);
+                            //         foreach ($jawaban_nm as $jwb_nm) {
+                            //             $ret .= "<td width='70'>$jwb_nm</td>";
+                            //         }
+                            //     }
 
                         $ret .= "</tr>
                             <tr style='font-size:35px;font-weight:normal;text-align:center;'>
@@ -321,19 +340,37 @@ class MateriN extends BaseController
                         </tbody>
                     </table>
                 </div>
-                <div class='col-md-12' style='width:100%;margin-top:30px;'>
+                <div class='col-md-12' style='width:100%; margin-top:30px;'>
                     <label style='font-size:20px;' for='Pertanyaan'>Pertanyaan ".$no_soal."</label>
-                    <div style='display:flex;'>";
+                    <div class='col-md-12 row' style='display:flex; justify-content:center; flex-wrap:wrap;'>";
+
+                    if ($res[0]->typesoal == "gambar") {
+                        foreach ($res as $keySoal) {
+                            $soal_nm = explode('|', $keySoal->soal_nm);
+                            foreach ($soal_nm as $jwb_nm) {
+                                $src = base_url("images/soalskmateri/materi/$materi/kolom/$kolom_id/$jwb_nm");
+                                $ret .= "<img src='$src' style='height: 100px; width: 100px; margin: 5px;'>";
+                            }
+                        }
+                    } else {
                         foreach ($res as $keySoal) {
                             $soal_nm = str_split($keySoal->soal_nm,1);
                             foreach ($soal_nm as $jwb_nm) {
-                                $ret .= "<div style='background-color:grey;min-width:70px;min-height:70px;font-size:65px;font-weight:bold;text-align:center;margin:10px;'>
+                                $ret .= "<div class='col-md-2' style='background-color:grey;min-height:70px;font-size:65px;font-weight:bold;text-align:center;margin:10px;display: inline-block;'>
                         ".$jwb_nm."</div>";
                             }
                         }
+                    }
+                        // foreach ($res as $keySoal) {
+                        //     $soal_nm = str_split($keySoal->soal_nm,1);
+                        //     foreach ($soal_nm as $jwb_nm) {
+                        //         $ret .= "<div style='background-color:grey;min-width:70px;min-height:70px;font-size:65px;font-weight:bold;text-align:center;margin:10px;'>
+                        // ".$jwb_nm."</div>";
+                        //     }
+                        // }
                         
                 $ret .= "</div>
-                    <div style='display:flex;'>";
+                    <div class='col-md-12' style='display:flex;'>";
                     foreach ($getjawaban as $k) {
                         $jawaban_id = $k->jawaban_id;
                         $ret .= "<button onclick='startujian(\"next\",\"A\",".$jawaban_id.",".$res[0]->soal_id.",$group_id,$no_soal,$kolom_id,$materi)' style='margin:5px;font-weight:bold;font-size: 20px;'
@@ -364,7 +401,7 @@ class MateriN extends BaseController
         $materi_id = $request->uri->getSegment(3);
         $group_id = $request->uri->getSegment(4);
         
-        return view('front/papi/hasiltryout');
+        return view('front/materiN/hasiltryout');
     }
 
 }

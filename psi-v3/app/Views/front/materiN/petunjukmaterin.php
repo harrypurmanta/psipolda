@@ -39,7 +39,7 @@
                                 ?>
                                 <p>Saat anda klik tombol <b><i>Mulai</i></b>, Maka akan langsung masuk ke Pengerjaan soal Selamat Mengerjakan</p>
                                 <?php
-                                    if ($materi[0]->materi_id == 4) {
+                                    if ($materi[0]->materi_id == 21) {
                                         echo "<a href='".base_url()."/materiN/sikapkerja/".$group_id."/".$materi[0]->materi_id."' class='btn btn-success' style='font-size:18px;'>Mulai</a>";
                                     } else {
                                         echo "<a href='".base_url()."/materiN/ujian/".$group_id."/".$materi[0]->materi_id."' class='btn btn-success' style='font-size:18px;'>Mulai</a>";
