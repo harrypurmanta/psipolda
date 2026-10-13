@@ -45,18 +45,20 @@ class Belakang  extends BaseController
 		$pwd0 = md5($p);
     	
 		$res = $this->usersmodel->checkloginadmin($u,$pwd0)->getResultArray();
-			if (count($res) > 0) {
-			  foreach ($res as $k) {
-			  	$this->session->set($k);
-			  }
-		  if ($this->session->user_group == "owner" || $this->session->user_group == "manajer") {
-		  	return redirect('admin');
-		  } else {
-		  	return redirect('/');
-		  }
-        } else {
-          return redirect('/');
-        } 
+		if (count($res) > 0) {
+			foreach ($res as $k) {
+				$this->session->set($k);
+			}
+			if ($this->session->user_group == "owner" || $this->session->user_group == "manajer") {
+				return redirect('admin');
+			} else {
+				$this->session->setFlashdata('error', 'Akun Anda tidak memiliki akses ke panel admin.');
+				return redirect('belakang');
+			}
+		} else {
+			$this->session->setFlashdata('error', 'Username atau password tidak sesuai.');
+			return redirect('belakang');
+		} 
 	}
 
 

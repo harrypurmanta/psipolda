@@ -2,6 +2,10 @@
 $request = \Config\Services::request();
 $group_id = isset($group_id) ? $group_id : $request->uri->getSegment(3);
 $materi_id = isset($materi_id) ? $materi_id : $request->uri->getSegment(4);
+$layout = isset($layout) ? $layout : ($request->getGet('layout') ?? 'portrait');
+if (!in_array($layout, ['portrait', 'landscape'])) {
+    $layout = 'portrait';
+}
 if (!isset($materi_nm) || empty($materi_nm)) {
     $db = \Config\Database::connect();
     $materi_row = $db->table('materi')->where('materi_id', $materi_id)->get()->getRow();
@@ -464,16 +468,302 @@ if (!isset($materi_nm) || empty($materi_nm)) {
                 margin-left: 0 !important;
             }
         }
+
+        /* Layout switcher pill */
+        .layout-switcher-pill {
+            display: inline-flex;
+            align-items: center;
+            background: #e2e8f0;
+            border: 1px solid #cbd5e1;
+            border-radius: 20px;
+            padding: 2px;
+            gap: 2px;
+        }
+
+        .btn-layout-mode {
+            border: none;
+            background: transparent;
+            color: #64748b;
+            font-size: 11px;
+            font-weight: 600;
+            padding: 2px 8px;
+            border-radius: 14px;
+            cursor: pointer;
+            transition: all 0.15s ease;
+            line-height: 1.2;
+            display: inline-flex;
+            align-items: center;
+            gap: 3px;
+        }
+
+        .btn-layout-mode:hover {
+            color: #0f172a;
+        }
+
+        .btn-layout-mode.active {
+            background: #2563eb;
+            color: #ffffff !important;
+            box-shadow: 0 1px 3px rgba(37, 99, 235, 0.3);
+        }
+
+        /* --- LANDSCAPE MODE RULES (KIRI SOAL & PILIHAN, KANAN BOX SOAL) --- */
+        .exam-layout-landscape .container {
+            width: 98% !important;
+            max-width: 1440px !important;
+            padding-left: 8px !important;
+            padding-right: 8px !important;
+        }
+
+        .exam-layout-landscape .exam-main-row {
+            display: flex !important;
+            flex-direction: row !important;
+            flex-wrap: nowrap !important;
+            gap: 14px !important;
+            align-items: flex-start !important;
+            margin-left: 0 !important;
+            margin-right: 0 !important;
+        }
+
+        .exam-layout-landscape .exam-col-left {
+            flex: 1 1 70% !important;
+            max-width: 72% !important;
+            width: 70% !important;
+            padding-left: 0 !important;
+            padding-right: 0 !important;
+        }
+
+        .exam-layout-landscape .exam-col-right {
+            flex: 0 0 30% !important;
+            max-width: 32% !important;
+            width: 30% !important;
+            padding-left: 0 !important;
+            padding-right: 0 !important;
+        }
+
+        .exam-layout-landscape .card-soal-main {
+            margin-top: 0 !important;
+        }
+
+        .exam-layout-landscape .box-nosoal-wrapper {
+            margin-top: 0 !important;
+            max-height: calc(100vh - 130px) !important;
+            min-height: 360px !important;
+            overflow-y: auto !important;
+            position: sticky !important;
+            top: 6px !important;
+        }
+
+        .exam-layout-landscape .box-nosoal-grid {
+            grid-template-columns: repeat(5, 1fr) !important;
+            gap: 5px !important;
+        }
+
+        /* --- PORTRAIT MODE RULES (SOAL DI ATAS, BOX SOAL DI BAWAH) --- */
+        .exam-layout-portrait .container {
+            width: 100% !important;
+            max-width: 860px !important;
+        }
+
+        .exam-layout-portrait .exam-main-row {
+            display: flex !important;
+            flex-direction: column !important;
+            gap: 12px !important;
+            margin-left: 0 !important;
+            margin-right: 0 !important;
+        }
+
+        .exam-layout-portrait .exam-col-left {
+            flex: 0 0 100% !important;
+            max-width: 100% !important;
+            width: 100% !important;
+            padding-left: 0 !important;
+            padding-right: 0 !important;
+        }
+
+        .exam-layout-portrait .exam-col-right {
+            flex: 0 0 100% !important;
+            max-width: 100% !important;
+            width: 100% !important;
+            padding-left: 0 !important;
+            padding-right: 0 !important;
+        }
+
+        .exam-layout-portrait .box-nosoal-wrapper {
+            margin-top: 0 !important;
+            max-height: 240px !important;
+            overflow-y: auto !important;
+        }
+
+        .exam-layout-portrait .box-nosoal-grid {
+            grid-template-columns: repeat(8, 1fr) !important;
+            gap: 6px !important;
+        }
+
+        @media (max-width: 768px) {
+            .exam-layout-landscape .exam-col-left {
+                flex: 1 1 65% !important;
+                max-width: 66% !important;
+                width: 65% !important;
+            }
+            .exam-layout-landscape .exam-col-right {
+                flex: 0 0 35% !important;
+                max-width: 35% !important;
+                width: 35% !important;
+            }
+            .exam-layout-landscape .box-nosoal-grid {
+                grid-template-columns: repeat(4, 1fr) !important;
+                gap: 4px !important;
+            }
+            .exam-layout-landscape .box-item-nosoal {
+                height: 32px !important;
+                font-size: 11px !important;
+            }
+            .exam-layout-portrait .box-nosoal-grid {
+                grid-template-columns: repeat(5, 1fr) !important;
+                gap: 5px !important;
+            }
+        }
+
+        /* Overlay Paksa Landscape untuk Layar Ponsel */
+        #landscapePromptOverlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            width: 100vw;
+            height: 100vh;
+            background: linear-gradient(135deg, #09131f 0%, #0f172a 100%);
+            z-index: 9999999;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 24px;
+            text-align: center;
+            color: #ffffff;
+        }
+
+        .phone-rotate-anim {
+            width: 80px;
+            height: 80px;
+            margin-bottom: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .phone-rotate-icon {
+            font-size: 54px;
+            color: #38bdf8;
+            animation: rotatePhone 2.2s ease-in-out infinite;
+        }
+
+        @keyframes rotatePhone {
+            0%, 20% {
+                transform: rotate(0deg);
+                color: #94a3b8;
+            }
+            50%, 80% {
+                transform: rotate(-90deg);
+                color: #38bdf8;
+            }
+            100% {
+                transform: rotate(0deg);
+                color: #94a3b8;
+            }
+        }
+
+        .prompt-title {
+            font-size: 20px;
+            font-weight: 700;
+            color: #ffffff;
+            margin-bottom: 8px;
+        }
+
+        .prompt-desc {
+            font-size: 14px;
+            color: #94a3b8;
+            max-width: 340px;
+            line-height: 1.5;
+            margin-bottom: 22px;
+        }
+
+        .btn-prompt-fullscreen {
+            background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
+            color: #ffffff;
+            border: none;
+            border-radius: 25px;
+            padding: 12px 28px;
+            font-size: 15px;
+            font-weight: 700;
+            box-shadow: 0 4px 15px rgba(37, 99, 235, 0.4);
+            cursor: pointer;
+            margin-bottom: 12px;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            transition: all 0.2s ease;
+        }
+
+        .btn-prompt-fullscreen:hover {
+            background: linear-gradient(135deg, #1d4ed8 0%, #1e40af 100%);
+            transform: translateY(-2px);
+        }
+
+        .btn-prompt-switch {
+            background: transparent;
+            color: #cbd5e1;
+            border: 1px solid #475569;
+            border-radius: 20px;
+            padding: 7px 18px;
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .btn-prompt-switch:hover {
+            background: rgba(255, 255, 255, 0.1);
+            color: #ffffff;
+        }
+
+        /* Saat mode landscape aktif DAN orientasi ponsel sedang portrait (tegak) */
+        @media screen and (max-width: 991px) and (orientation: portrait) {
+            body.exam-layout-landscape #landscapePromptOverlay,
+            .exam-layout-landscape #landscapePromptOverlay,
+            #examBody.exam-layout-landscape #landscapePromptOverlay {
+                display: flex !important;
+            }
+        }
     </style>
 </head>
 
-<body class="hold-transition skin-blue layout-top-nav">
+<body class="hold-transition skin-blue layout-top-nav <?= ($layout == 'landscape' ? 'exam-layout-landscape' : 'exam-layout-portrait') ?>" id="examBody">
     <div class="wrapper">
+
+        <!-- Overlay Paksa Landscape di HP User -->
+        <div id="landscapePromptOverlay">
+            <div class="phone-rotate-anim">
+                <i class="fa fa-mobile phone-rotate-icon"></i>
+            </div>
+            <div class="prompt-title">Putar Layar ke Posisi Landscape</div>
+            <div class="prompt-desc">
+                Ujian ini menggunakan mode <b>Landscape (Mendatar)</b> agar soal di kiri dan kotak nomor soal di kanan tampil maksimal. Mohon putar ponsel Anda ke posisi mendatar.
+            </div>
+            <button type="button" class="btn-prompt-fullscreen" onclick="forceLandscapeFullscreen()">
+                <i class="fa fa-arrows-alt"></i> Kunci Layar Penuh & Landscape
+            </button>
+            <button type="button" class="btn-prompt-switch" onclick="switchExamLayout('portrait')">
+                Atau gunakan mode Portrait (Tegak)
+            </button>
+        </div>
+
         <header class="main-header">
             <?= $this->include('front/navbar') ?>
         </header>
 
-        <div class="content-wrapper">
+        <div class="content-wrapper <?= ($layout == 'landscape' ? 'exam-layout-landscape' : 'exam-layout-portrait') ?>" id="examLayoutWrapper">
             <div class="container">
                 <section class="content">
 
@@ -482,7 +772,18 @@ if (!isset($materi_nm) || empty($materi_nm)) {
                         <!-- Tahapan Ujian Card -->
                         <div class="col-lg-8 col-md-7 col-7 pr-1">
                             <div class="card-exam-header h-100">
-                                <span class="exam-header-title"><i class="fa fa-tasks text-primary mr-1"></i> Ujian <?= esc($materi_nm) ?></span>
+                                <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; margin-bottom: 4px;">
+                                    <span class="exam-header-title"><i class="fa fa-tasks text-primary mr-1"></i> Ujian <?= esc($materi_nm) ?></span>
+                                    <!-- Layout Switcher Pill -->
+                                    <div class="layout-switcher-pill">
+                                        <button type="button" class="btn-layout-mode <?= ($layout == 'portrait' ? 'active' : '') ?>" id="btnTogglePortrait" onclick="switchExamLayout('portrait')" title="Tampilan Portrait (Vertikal)">
+                                            <i class="fa fa-mobile"></i> Portrait
+                                        </button>
+                                        <button type="button" class="btn-layout-mode <?= ($layout == 'landscape' ? 'active' : '') ?>" id="btnToggleLandscape" onclick="switchExamLayout('landscape')" title="Tampilan Landscape (Kiri Soal, Kanan Box Soal)">
+                                            <i class="fa fa-desktop"></i> Landscape
+                                        </button>
+                                    </div>
+                                </div>
                                 <input type="hidden" id="inp_group_id" value="<?= esc($group_id) ?>">
                                 <!-- Wrapper Scroll -->
                                 <div class="tahapan-wrapper">
@@ -506,9 +807,9 @@ if (!isset($materi_nm) || empty($materi_nm)) {
                     </div>
 
                     <!-- Row Main Exam Area -->
-                    <div class="row">
+                    <div class="row exam-main-row">
                         <!-- Left: Question & Answers Box -->
-                        <div class="col-lg-8 col-md-7 col-12">
+                        <div class="col-lg-8 col-md-7 col-12 exam-col-left">
                             <div class="card-soal-main">
 
                                 <!-- Question Box -->
@@ -544,13 +845,16 @@ if (!isset($materi_nm) || empty($materi_nm)) {
                         </div>
 
                         <!-- Right: Box No Soal Grid -->
-                        <div class="col-lg-4 col-md-5 col-12">
+                        <div class="col-lg-4 col-md-5 col-12 exam-col-right">
                             <div class="box-nosoal-wrapper box-nosoal-container">
                                 <div style="font-weight: 700; font-size: 13px; margin-bottom: 10px; color: #0f172a;">
                                     <i class="fa fa-th-large text-primary mr-1"></i> Navigasi Soal
                                 </div>
                                 <div id="dv_boxnosoal" class="box-nosoal-grid">
-                                    <!-- Box items rendered dynamically -->
+                                    <?php if (!empty($total_soal)) {
+                                        foreach ($total_soal as $box) { ?>
+                                            <div class="box-item-nosoal unanswered <?= ($box->no_soal == 1 ? 'active' : '') ?>" onclick="setboxsoal(<?= $box->no_soal ?>)"><?= $box->no_soal ?></div>
+                                    <?php } } ?>
                                 </div>
                             </div>
                         </div>
@@ -586,7 +890,101 @@ if (!isset($materi_nm) || empty($materi_nm)) {
     var timers;
     var timerStarted = false;
 
+    function forceLandscapeFullscreen() {
+        var elem = document.documentElement;
+        var req = elem.requestFullscreen || elem.webkitRequestFullscreen || elem.mozRequestFullScreen || elem.msRequestFullscreen;
+        if (req) {
+            var promise = req.call(elem);
+            if (promise && promise.then) {
+                promise.then(function() {
+                    if (screen.orientation && screen.orientation.lock) {
+                        screen.orientation.lock('landscape').catch(function(){});
+                    }
+                }).catch(function(){});
+            } else {
+                if (screen.orientation && screen.orientation.lock) {
+                    screen.orientation.lock('landscape').catch(function(){});
+                }
+            }
+        } else {
+            if (screen.orientation && screen.orientation.lock) {
+                screen.orientation.lock('landscape').catch(function(){});
+            }
+        }
+    }
+
+    function checkAndLockOrientation(layout) {
+        if (layout === 'landscape') {
+            try {
+                if (screen.orientation && screen.orientation.lock) {
+                    screen.orientation.lock('landscape').catch(function(){});
+                }
+            } catch(e) {}
+        } else {
+            try {
+                if (screen.orientation && screen.orientation.unlock) {
+                    screen.orientation.unlock();
+                }
+            } catch(e) {}
+        }
+    }
+
+    function switchExamLayout(layout) {
+        if (layout === 'landscape') {
+            $('body').removeClass('exam-layout-portrait').addClass('exam-layout-landscape');
+            $('#examLayoutWrapper').removeClass('exam-layout-portrait').addClass('exam-layout-landscape');
+            $('#btnToggleLandscape').addClass('active');
+            $('#btnTogglePortrait').removeClass('active');
+            checkAndLockOrientation('landscape');
+        } else {
+            $('body').removeClass('exam-layout-landscape').addClass('exam-layout-portrait');
+            $('#examLayoutWrapper').removeClass('exam-layout-landscape').addClass('exam-layout-portrait');
+            $('#btnTogglePortrait').addClass('active');
+            $('#btnToggleLandscape').removeClass('active');
+            checkAndLockOrientation('portrait');
+        }
+        try {
+            localStorage.setItem('materiN_layout', layout);
+        } catch(e) {}
+        checkMobileOrientation();
+    }
+
+    function checkMobileOrientation() {
+        var isLandscape = $('body').hasClass('exam-layout-landscape');
+        if (!isLandscape) {
+            $('#landscapePromptOverlay').hide();
+            return;
+        }
+
+        var isPortrait = window.innerHeight > window.innerWidth;
+        var isSmallScreen = window.innerWidth <= 991;
+
+        if (isSmallScreen && isPortrait) {
+            $('#landscapePromptOverlay').css('display', 'flex');
+        } else {
+            $('#landscapePromptOverlay').hide();
+        }
+    }
+
+    $(window).on('resize orientationchange', function() {
+        checkMobileOrientation();
+    });
+
     $(document).ready(function() {
+        var urlParams = new URLSearchParams(window.location.search);
+        var urlLayout = urlParams.get('layout');
+        if (urlLayout && (urlLayout === 'landscape' || urlLayout === 'portrait')) {
+            switchExamLayout(urlLayout);
+        } else {
+            try {
+                var storedLayout = localStorage.getItem('materiN_layout');
+                if (storedLayout && (storedLayout === 'landscape' || storedLayout === 'portrait')) {
+                    switchExamLayout(storedLayout);
+                }
+            } catch(e) {}
+        }
+        checkMobileOrientation();
+
         setTimeout(() => {
             let activeTab = document.querySelector('.tahapan-item.active');
             if (activeTab) {
@@ -676,7 +1074,8 @@ if (!isset($materi_nm) || empty($materi_nm)) {
                             window.location.href = "<?= base_url() ?>/materiN/hasiltryout/" + materi + "/" + group_id;
                         });
                     }else{
-                        window.location.href = "<?= base_url() ?>/materiN/petunjukmaterin/" + mtri + "/" + group_id;
+                        let currentLayout = $('#examLayoutWrapper').hasClass('exam-layout-landscape') ? 'landscape' : 'portrait';
+                        window.location.href = "<?= base_url() ?>/materiN/petunjukmaterin/" + mtri + "/" + group_id + "?layout=" + currentLayout;
                     }
 
                 } else {

@@ -36,6 +36,11 @@ class MateriN extends BaseController
         $request = \Config\Services::request();
         $group_id = $request->uri->getSegment(3);
         $materi_id = $request->uri->getSegment(4);
+        $layout = $request->getGet('layout');
+        if (empty($layout) || !in_array($layout, ['portrait', 'landscape'])) {
+            $layout = 'portrait';
+        }
+        $data['layout'] = $layout;
         $data['materi'] = $this->soalmodel->getMateriInMateriN()->getResult();
         $kolom_id = 0;
         

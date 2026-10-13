@@ -47,14 +47,13 @@
             flex: 1 1 auto !important;
             height: auto !important;
             min-height: 0 !important;
-            max-height: calc(100vh - 95px) !important;
             display: flex !important;
             align-items: center !important;
             justify-content: center !important;
             margin: 0 !important;
-            padding: 0 15px !important;
+            padding: 15px !important;
             background-color: #ecf0f5 !important;
-            overflow: hidden !important;
+            overflow-y: auto !important;
         }
         .content-wrapper > .container {
             width: 100% !important;
@@ -89,15 +88,14 @@
 
         /* CARD CONSISTENT SIZE */
         .petunjuk-wrapper {
-            width: 760px;
+            width: 780px;
             max-width: 100%;
             margin: 0 auto;
         }
         .petunjuk-card {
-            width: 760px;
-            height: 430px;
-            min-height: 430px;
-            max-height: 430px;
+            width: 780px;
+            max-width: 100%;
+            height: auto;
             background: #ffffff;
             border-radius: 12px;
             box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08), 0 2px 8px rgba(0, 0, 0, 0.04);
@@ -107,10 +105,8 @@
             flex-direction: column;
         }
         .petunjuk-header {
-            height: 70px;
-            min-height: 70px;
-            max-height: 70px;
-            padding: 0 24px;
+            min-height: 64px;
+            padding: 12px 20px;
             display: flex;
             align-items: center;
             color: #ffffff;
@@ -174,15 +170,121 @@
         /* CARD BODY UNIFORM LAYOUT */
         .petunjuk-body {
             flex: 1 1 auto;
-            height: 360px;
-            min-height: 360px;
-            max-height: 360px;
-            padding: 22px 28px 18px;
+            height: auto;
+            min-height: 380px;
+            padding: 16px 24px 14px;
             display: flex;
             flex-direction: column;
             justify-content: space-between;
+            gap: 10px;
             background: #ffffff;
             box-sizing: border-box;
+            overflow-y: auto;
+        }
+
+        /* ORIENTATION SELECTION STYLING */
+        .orientation-box {
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 10px;
+            padding: 10px 14px;
+            margin: 2px 0;
+        }
+        .orientation-box-title {
+            font-size: 13px;
+            font-weight: 700;
+            color: #1e293b;
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        .orientation-box-title span.badge-hint {
+            font-size: 11px;
+            font-weight: 600;
+            background: #e0f2fe;
+            color: #0369a1;
+            padding: 2px 8px;
+            border-radius: 12px;
+        }
+        .orientation-options-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+        }
+        .orientation-card-btn {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 8px 12px;
+            background: #ffffff;
+            border: 2px solid #cbd5e1;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            position: relative;
+            user-select: none;
+            margin: 0;
+        }
+        .orientation-card-btn:hover {
+            border-color: #94a3b8;
+            background: #f1f5f9;
+        }
+        .orientation-card-btn.active {
+            border-color: #2563eb;
+            background: #eff6ff;
+            box-shadow: 0 2px 8px rgba(37, 99, 235, 0.15);
+        }
+        .orientation-icon-box {
+            width: 36px;
+            height: 36px;
+            border-radius: 8px;
+            background: #f1f5f9;
+            color: #475569;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+            flex-shrink: 0;
+            transition: all 0.2s ease;
+        }
+        .orientation-card-btn.active .orientation-icon-box {
+            background: #2563eb;
+            color: #ffffff;
+        }
+        .orientation-details {
+            flex-grow: 1;
+            text-align: left;
+        }
+        .orientation-details .name {
+            font-size: 13px;
+            font-weight: 700;
+            color: #1e293b;
+            line-height: 1.2;
+        }
+        .orientation-card-btn.active .orientation-details .name {
+            color: #1d4ed8;
+        }
+        .orientation-details .desc {
+            font-size: 11px;
+            color: #64748b;
+            margin-top: 2px;
+            line-height: 1.2;
+        }
+        .orientation-check-circle {
+            font-size: 16px;
+            color: #cbd5e1;
+            transition: color 0.2s ease;
+        }
+        .orientation-card-btn.active .orientation-check-circle {
+            color: #2563eb;
+        }
+
+        @media (max-width: 600px) {
+            .orientation-options-grid {
+                grid-template-columns: 1fr;
+                gap: 8px;
+            }
         }
         .instructions-box {
             background: #f8fafc;
@@ -463,6 +565,44 @@
                                     </div>
                                 <?php } ?>
 
+                                <!-- Pilihan Orientasi Layar (Portrait / Landscape) -->
+                                <div class="orientation-box">
+                                    <div class="orientation-box-title">
+                                        <span><i class="fa fa-sliders text-primary" style="margin-right: 5px;"></i> Pilihan Orientasi Tampilan Ujian:</span>
+                                        <span class="badge-hint">Pilih sebelum mulai</span>
+                                    </div>
+                                    <div class="orientation-options-grid">
+                                        <!-- Opsi Portrait -->
+                                        <div class="orientation-card-btn" id="opt-portrait" onclick="setOrientationLayout('portrait')">
+                                            <div class="orientation-icon-box">
+                                                <i class="fa fa-mobile"></i>
+                                            </div>
+                                            <div class="orientation-details">
+                                                <div class="name">Portrait (Tegak)</div>
+                                                <div class="desc">Soal di atas, box nomor di bawah</div>
+                                            </div>
+                                            <div class="orientation-check-circle">
+                                                <i class="fa fa-circle-o" id="check-icon-portrait"></i>
+                                            </div>
+                                        </div>
+
+                                        <!-- Opsi Landscape -->
+                                        <div class="orientation-card-btn" id="opt-landscape" onclick="setOrientationLayout('landscape')">
+                                            <div class="orientation-icon-box">
+                                                <i class="fa fa-desktop"></i>
+                                            </div>
+                                            <div class="orientation-details">
+                                                <div class="name">Landscape (Melebar)</div>
+                                                <div class="desc">Kiri Soal & Pilihan, Kanan Box Soal</div>
+                                            </div>
+                                            <div class="orientation-check-circle">
+                                                <i class="fa fa-circle-o" id="check-icon-landscape"></i>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <input type="hidden" id="selected_orientation" value="portrait">
+                                </div>
+
                                 <!-- Alert Notice -->
                                 <div class="alert-start-notice">
                                     <i class="fa fa-info-circle"></i>
@@ -480,7 +620,7 @@
                                             $start_url = base_url("materiN/ujian/" . $group_id . "/" . $materi_id);
                                         }
                                     ?>
-                                    <a href="<?= $start_url ?>" class="btn btn-start-ujian">
+                                    <a id="btn-start-ujian" href="<?= $start_url ?>" class="btn btn-start-ujian">
                                         <i class="fa fa-play-circle" style="margin-right: 6px;"></i> Mulai Ujian
                                     </a>
                                 </div>
@@ -498,5 +638,63 @@
     <script src="<?= base_url() ?>/bower_components/jquery-slimscroll/jquery.slimscroll.min.js"></script>
     <script src="<?= base_url() ?>/bower_components/fastclick/lib/fastclick.js"></script>
     <script src="<?= base_url() ?>/dist/js/adminlte.min.js"></script>
+    <script>
+    var baseStartUrl = "<?= $start_url ?>";
+
+    function setOrientationLayout(layout) {
+        $("#selected_orientation").val(layout);
+        $(".orientation-card-btn").removeClass("active");
+        $(".orientation-check-circle i").removeClass("fa-check-circle").addClass("fa-circle-o");
+        
+        if (layout === 'landscape') {
+            $("#opt-landscape").addClass("active");
+            $("#check-icon-landscape").removeClass("fa-circle-o").addClass("fa-check-circle");
+        } else {
+            $("#opt-portrait").addClass("active");
+            $("#check-icon-portrait").removeClass("fa-circle-o").addClass("fa-check-circle");
+        }
+
+        try {
+            localStorage.setItem('materiN_layout', layout);
+        } catch(e) {}
+
+        var separator = baseStartUrl.indexOf('?') !== -1 ? '&' : '?';
+        $("#btn-start-ujian").attr("href", baseStartUrl + separator + "layout=" + layout);
+    }
+
+    $(document).ready(function() {
+        var savedLayout = "portrait";
+        try {
+            savedLayout = localStorage.getItem('materiN_layout') || "portrait";
+        } catch(e) {}
+        setOrientationLayout(savedLayout);
+
+        $("#btn-start-ujian").on("click", function(e) {
+            var layout = $("#selected_orientation").val();
+            if (layout === "landscape") {
+                try {
+                    var elem = document.documentElement;
+                    var req = elem.requestFullscreen || elem.webkitRequestFullscreen || elem.mozRequestFullScreen || elem.msRequestFullscreen;
+                    if (req) {
+                        var p = req.call(elem);
+                        if (p && p.then) {
+                            p.then(function() {
+                                if (screen.orientation && screen.orientation.lock) {
+                                    screen.orientation.lock("landscape").catch(function(){});
+                                }
+                            }).catch(function(){});
+                        } else {
+                            if (screen.orientation && screen.orientation.lock) {
+                                screen.orientation.lock("landscape").catch(function(){});
+                            }
+                        }
+                    } else if (screen.orientation && screen.orientation.lock) {
+                        screen.orientation.lock("landscape").catch(function(){});
+                    }
+                } catch(err) {}
+            }
+        });
+    });
+    </script>
 </body>
 </html>
